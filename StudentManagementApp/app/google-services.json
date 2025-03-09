@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "395817455004",
+    "project_id": "classroom-management-project",
+    "storage_bucket": "classroom-management-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:395817455004:android:2c029f006d1b706d2a8c59",
+        "android_client_info": {
+          "package_name": "vn.edu.fpt.studentmanagementapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLQtg2i1P9pBE0F6eZr9_uagHZWnUlzvs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
