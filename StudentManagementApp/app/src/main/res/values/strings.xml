@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">Student Management App</string>
+    <string name="teacher">Giáo viên</string>
+    <string name="student">Học sinh</string>
+    <string name="register">Đăng ký</string>
+    <string name="password">Mật khẩu</string>
+    <string name="email">Email</string>
+    <string name="login">Đăng nhập</string>
+    <string name="student_name">Tên học sinh</string>
+    <string name="student_class">Lớp</string>
+    <string name="student_id">Mã số</string>
+    <string name="enter_name">Nhập tên</string>
+    <string name="enter_class">Nhập lớp</string>
+    <string name="enter_id">Nhập mã số</string>
+    <string name="save">Lưu</string>
+    <string name="loading">Loading...</string>
+    <string name="logout">Đăng xuất</string>
 </resources>

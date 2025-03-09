@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "395817455004",
-    "project_id": "classroom-management-project",
-    "storage_bucket": "classroom-management-project.firebasestorage.app"
+    "project_number": "779412800115",
+    "project_id": "classroom-management-pro-baab1",
+    "storage_bucket": "classroom-management-pro-baab1.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:395817455004:android:2c029f006d1b706d2a8c59",
+        "mobilesdk_app_id": "1:779412800115:android:fbbe882339639a3a632006",
         "android_client_info": {
           "package_name": "vn.edu.fpt.studentmanagementapp"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBLQtg2i1P9pBE0F6eZr9_uagHZWnUlzvs"
+          "current_key": "AIzaSyAzX32ACa76bZd7TKsGgK29VESkhOd9OKg"
         }
       ],
       "services": {
