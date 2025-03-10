@@ -42,6 +42,42 @@
             android:text="@string/student" />
     </RadioGroup>
 
+    <!-- Student-specific fields, initially hidden -->
+    <LinearLayout
+        android:id="@+id/student_fields"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <EditText
+            android:id="@+id/et_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:hint="@string/enter_name"
+            android:inputType="text"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/et_class"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:hint="@string/enter_class"
+            android:inputType="text"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/et_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:hint="@string/enter_id"
+            android:inputType="text"
+            android:minHeight="48dp" />
+    </LinearLayout>
+
     <Button
         android:id="@+id/btn_register"
         android:layout_width="match_parent"

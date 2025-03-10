@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity {
@@ -28,7 +30,6 @@ public class LoginActivity extends AppCompatActivity {
         Button btnLogin = findViewById(R.id.btn_login);
         Button btnGoToRegister = findViewById(R.id.btn_go_to_register);
 
-        // In LoginActivity.java - Update the login click listener
         btnLogin.setOnClickListener(v -> {
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
@@ -60,7 +61,6 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(new Intent(this, RegisterActivity.class)));
     }
 
-    // Updated checkUserRoleAndRedirect method in LoginActivity.java
     private void checkUserRoleAndRedirect() {
         String userId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
         FirebaseFirestore.getInstance().collection("Users").document(userId)
@@ -69,19 +69,33 @@ public class LoginActivity extends AppCompatActivity {
                     if (documentSnapshot.exists()) {
                         String role = documentSnapshot.getString("role");
                         if ("teacher".equals(role)) {
-                            startActivity(new Intent(LoginActivity.this, StudentListActivity.class));
+                            startActivity(new Intent(LoginActivity.this, TeacherDashboardActivity.class));
                             finish();
                         } else {
-                            // Handle student role - for now redirect to same screen
-                            startActivity(new Intent(LoginActivity.this, StudentListActivity.class));
+                            startActivity(new Intent(LoginActivity.this, StudentDashboardActivity.class));
                             finish();
                         }
                     } else {
-                        Toast.makeText(LoginActivity.this, "Không tìm thấy thông tin người dùng", Toast.LENGTH_SHORT).show();
+                        // Create user document if it doesn't exist (for users who registered before)
+                        Map<String, Object> user = new HashMap<>();
+                        user.put("email", mAuth.getCurrentUser().getEmail());
+                        user.put("role", "student"); // Default role
+
+                        FirebaseFirestore.getInstance().collection("Users").document(userId)
+                                .set(user)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(LoginActivity.this, "Created new user profile", Toast.LENGTH_SHORT).show();
+                                    startActivity(new Intent(LoginActivity.this, StudentDashboardActivity.class));
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(LoginActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(LoginActivity.this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
 }

@@ -12,10 +12,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 
 public class StudentAdapter extends FirestoreRecyclerAdapter<Student, StudentAdapter.StudentViewHolder> {
     private final StudentActionListener listener;
+    private final FirebaseFirestore db;
 
     public interface StudentActionListener {
         void onEditStudent(String documentId, Student student);
@@ -25,30 +27,49 @@ public class StudentAdapter extends FirestoreRecyclerAdapter<Student, StudentAda
     public StudentAdapter(@NonNull FirestoreRecyclerOptions<Student> options, StudentActionListener listener) {
         super(options);
         this.listener = listener;
+        this.db = FirebaseFirestore.getInstance();
     }
 
-    @Override
-    protected void onBindViewHolder(@NonNull StudentViewHolder holder, int position, @NonNull Student student) {
-        holder.tvName.setText(student.getName());
-        holder.tvClass.setText(student.getClassName());
-        holder.tvCode.setText(student.getStudentCode());
-
-        // Get document ID for the current student
-        String documentId = getSnapshots().getSnapshot(position).getId();
-
-        // Set click listeners for edit and delete buttons
-        holder.btnEdit.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onEditStudent(documentId, student);
-            }
-        });
-
-        holder.btnDelete.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onDeleteStudent(documentId);
-            }
-        });
+//    @Override
+//    protected void onBindViewHolder(@NonNull StudentViewHolder holder, int position, @NonNull Student student) {
+//        holder.tvName.setText(student.getName());
+//        holder.tvClass.setText(student.getClassName());
+//        holder.tvCode.setText(student.getStudentCode());
+//
+//        // Get document ID for the current student
+//        String documentId = getSnapshots().getSnapshot(position).getId();
+//
+//        // Set click listeners for edit and delete buttons
+//        holder.btnEdit.setOnClickListener(v -> {
+//            if (listener != null) {
+//                listener.onEditStudent(documentId, student);
+//            }
+//        });
+//
+//        holder.btnDelete.setOnClickListener(v -> {
+//            if (listener != null) {
+//                listener.onDeleteStudent(documentId);
+//            }
+//        });
+//    }
+@Override
+protected void onBindViewHolder(@NonNull StudentViewHolder holder, int position, @NonNull Student student) {
+    holder.tvName.setText(student.getName());
+    holder.tvClass.setText(student.getClassName());
+    holder.tvCode.setText(student.getStudentCode());
+    if (student.getUserId() != null) {
+        db.collection("Users").document(student.getUserId())
+                .get()
+                .addOnSuccessListener(doc -> {
+                    String email = doc.getString("email");
+                    holder.tvCode.append("\nEmail: " + (email != null ? email : "Not linked"));
+                });
     }
+
+    String documentId = getSnapshots().getSnapshot(position).getId();
+    holder.btnEdit.setOnClickListener(v -> listener.onEditStudent(documentId, student));
+    holder.btnDelete.setOnClickListener(v -> listener.onDeleteStudent(documentId));
+}
 
     @NonNull
     @Override

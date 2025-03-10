@@ -15,4 +15,16 @@
     <string name="save">Lưu</string>
     <string name="loading">Loading...</string>
     <string name="logout">Đăng xuất</string>
+    <string name="title_teacher_dashboard">Teacher Dashboard</string>
+    <string name="title_student_dashboard">Student Dashboard</string>
+    <string name="manage_students">Manage Students</string>
+    <string name="manage_classes">Manage Classes</string>
+    <string name="manage_assignments">Manage Assignments</string>
+    <string name="review_submissions">Review Submissions</string>
+    <string name="my_assignments">My Assignments</string>
+    <string name="my_classes">My Classes</string>
+    <string name="my_grades">My Grades</string>
+    <string name="my_profile">My Profile</string>
+    <string name="email_optional">Email (Optional)</string>
+    <string name="enter_email_optional">Enter email to link to user</string>
 </resources>

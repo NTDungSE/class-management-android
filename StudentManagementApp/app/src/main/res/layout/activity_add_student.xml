@@ -50,6 +50,21 @@
         android:minHeight="48dp"
         android:inputType="text" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/email_optional" />
+
+    <EditText
+        android:id="@+id/et_email"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_columnWeight="1"
+        android:autofillHints=""
+        android:hint="@string/enter_email_optional"
+        android:minHeight="48dp"
+        android:inputType="textEmailAddress" />
+
     <Button
         android:id="@+id/btn_save"
         android:layout_width="match_parent"
