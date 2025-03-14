@@ -2,80 +2,95 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp">
 
     <TextView
         android:id="@+id/tv_welcome"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:text="Welcome, Student"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
+        android:textColor="@color/black"
+        android:textSize="28sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tv_student_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
         android:text="Student Info Loading..."
-        android:textSize="18sp"
-        android:layout_marginBottom="24dp" />
+        android:textColor="@color/black"
+        android:textSize="18sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btn_my_assignments"
             android:layout_width="0dp"
             android:layout_height="120dp"
+            android:layout_marginEnd="12dp"
             android:layout_weight="1"
-            android:text="My Assignments"
-            android:layout_marginEnd="8dp"
-            android:textAllCaps="false" />
+            android:backgroundTint="@color/purple_200"
+            android:text="Assignments"
+            android:textAllCaps="false"
+            android:textColor="@color/black" />
 
         <Button
             android:id="@+id/btn_my_classes"
             android:layout_width="0dp"
             android:layout_height="120dp"
+            android:layout_marginStart="12dp"
             android:layout_weight="1"
-            android:text="My Classes"
-            android:layout_marginStart="8dp"
-            android:textAllCaps="false" />
+            android:backgroundTint="@color/purple_200"
+            android:text="Classes"
+            android:textAllCaps="false"
+            android:textColor="@color/black" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btn_my_grades"
             android:layout_width="0dp"
             android:layout_height="120dp"
+            android:layout_marginEnd="12dp"
             android:layout_weight="1"
-            android:text="My Grades"
-            android:layout_marginEnd="8dp"
-            android:textAllCaps="false" />
+            android:backgroundTint="@color/purple_200"
+            android:text="Grades"
+            android:textAllCaps="false"
+            android:textColor="@color/black" />
 
         <Button
             android:id="@+id/btn_my_profile"
             android:layout_width="0dp"
             android:layout_height="120dp"
+            android:layout_marginStart="12dp"
             android:layout_weight="1"
-            android:text="My Profile"
-            android:layout_marginStart="8dp"
-            android:textAllCaps="false" />
+            android:backgroundTint="@color/purple_200"
+            android:text="Profile"
+            android:textAllCaps="false"
+            android:textColor="@color/black" />
     </LinearLayout>
 
     <Button
         android:id="@+id/btn_logout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:backgroundTint="@color/grey_500"
+        android:padding="16dp"
         android:text="@string/logout"
-        android:layout_marginTop="24dp" />
+        android:textAllCaps="false"
+        android:textColor="@color/white" />
 </LinearLayout>

@@ -44,8 +44,7 @@ public class TeacherDashboardActivity extends AppCompatActivity {
         });
 
         btnManageClasses.setOnClickListener(v -> {
-            // Will implement in Step 2
-            Toast.makeText(this, "Class management coming soon", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(TeacherDashboardActivity.this, ClassListActivity.class));
         });
 
         btnManageAssignments.setOnClickListener(v -> {
