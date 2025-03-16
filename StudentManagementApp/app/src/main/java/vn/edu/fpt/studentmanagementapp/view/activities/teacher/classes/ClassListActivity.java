@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -45,7 +45,7 @@ public class ClassListActivity extends AppCompatActivity implements ClassAdapter
         adapter = new ClassAdapter(options, this);
         rvClasses.setAdapter(adapter);
 
-        FloatingActionButton fabAddClass = findViewById(R.id.fab_add_class);
+        ExtendedFloatingActionButton fabAddClass = findViewById(R.id.fab_add_class);
         fabAddClass.setOnClickListener(v -> startActivity(new Intent(this, AddClassActivity.class)));
 
         Button btnLogout = findViewById(R.id.btn_logout);
@@ -91,6 +91,14 @@ public class ClassListActivity extends AppCompatActivity implements ClassAdapter
     protected void onStart() {
         super.onStart();
         adapter.startListening();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 
     @Override

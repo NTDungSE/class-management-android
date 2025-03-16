@@ -22,8 +22,8 @@
         </activity>
         <activity android:name=".view.activities.auth.LoginActivity" />
         <activity android:name=".view.activities.auth.RegisterActivity" />
-        <activity android:name=".view.activities.students.StudentListActivity" />
-        <activity android:name=".view.activities.students.AddStudentActivity" />
+        <activity android:name=".view.activities.teacher.students.StudentListActivity" />
+        <activity android:name=".view.activities.teacher.students.AddStudentActivity" />
         <activity
             android:name=".view.activities.teacher.TeacherDashboardActivity"
             android:exported="false" />

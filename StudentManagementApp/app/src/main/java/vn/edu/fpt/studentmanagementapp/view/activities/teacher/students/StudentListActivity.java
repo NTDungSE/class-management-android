@@ -93,7 +93,13 @@ public class StudentListActivity extends AppCompatActivity implements StudentAda
         super.onStart();
         adapter.startListening();
     }
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
+    }
     @Override
     protected void onStop() {
         super.onStop();

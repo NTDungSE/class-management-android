@@ -13,7 +13,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Class;
@@ -24,16 +26,31 @@ public class AssignStudentsActivity extends AppCompatActivity implements AssignS
     private FirebaseFirestore db;
     private AssignStudentAdapter adapter;
     private String classId;
-    private List<String> assignedStudentIds = new ArrayList<>();
+    private Set<String> assignedStudentIds = new HashSet<>(); // Changed to HashSet to prevent duplicates
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_assign_students); // New layout needed
+        setContentView(R.layout.activity_assign_students);
         db = FirebaseFirestore.getInstance();
 
         classId = getIntent().getStringExtra("CLASS_ID");
+        if (classId == null) {
+            Toast.makeText(this, "Error: Class ID not provided", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
+        setupRecyclerView();
+
+        Button btnSave = findViewById(R.id.btn_save);
+        btnSave.setOnClickListener(v -> saveAssignments());
+
+        // Load current assignments right after setting up the RecyclerView
+        loadCurrentAssignments();
+    }
+
+    private void setupRecyclerView() {
         RecyclerView rvStudents = findViewById(R.id.rv_students);
         rvStudents.setLayoutManager(new LinearLayoutManager(this));
 
@@ -44,9 +61,20 @@ public class AssignStudentsActivity extends AppCompatActivity implements AssignS
 
         adapter = new AssignStudentAdapter(options, this);
         rvStudents.setAdapter(adapter);
+    }
 
-        Button btnSave = findViewById(R.id.btn_save);
-        btnSave.setOnClickListener(v -> saveAssignments());
+    private void loadCurrentAssignments() {
+        db.collection("Classes").document(classId).get()
+                .addOnSuccessListener(doc -> {
+                    Class classData = doc.toObject(Class.class);
+                    if (classData != null && classData.getStudentIds() != null) {
+                        assignedStudentIds = new HashSet<>(classData.getStudentIds());
+                        adapter.setAssignedStudentIds(new ArrayList<>(assignedStudentIds));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error loading class data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     @Override
@@ -59,11 +87,14 @@ public class AssignStudentsActivity extends AppCompatActivity implements AssignS
     }
 
     private void saveAssignments() {
+        List<String> studentIdsList = new ArrayList<>(assignedStudentIds);
+
         db.collection("Classes").document(classId)
-                .update("studentIds", assignedStudentIds)
+                .update("studentIds", studentIdsList)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Students assigned successfully", Toast.LENGTH_SHORT).show();
-                    finish();
+                    // Finish after a brief delay to allow the UI to update
+                    new android.os.Handler().postDelayed(this::finish, 300);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -74,15 +105,6 @@ public class AssignStudentsActivity extends AppCompatActivity implements AssignS
     protected void onStart() {
         super.onStart();
         adapter.startListening();
-        // Load current assignments
-        db.collection("Classes").document(classId).get()
-                .addOnSuccessListener(doc -> {
-                    Class classData = doc.toObject(Class.class);
-                    if (classData != null) {
-                        assignedStudentIds = new ArrayList<>(classData.getStudentIds());
-                        adapter.setAssignedStudentIds(assignedStudentIds);
-                    }
-                });
     }
 
     @Override

@@ -27,16 +27,35 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
     public ClassAdapter(@NonNull FirestoreRecyclerOptions<Class> options, ClassActionListener listener) {
         super(options);
         this.listener = listener;
+        setHasStableIds(true);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        // Safety check to prevent IndexOutOfBoundsException
+        if (position < 0 || position >= getSnapshots().size()) {
+            return RecyclerView.NO_ID;
+        }
+        // This ensures stable IDs based on the document ID
+        return getSnapshots().getSnapshot(position).getId().hashCode();
     }
 
     @Override
     protected void onBindViewHolder(@NonNull ClassViewHolder holder, int position, @NonNull Class classData) {
         holder.tvName.setText(classData.getName());
-        String classId = getSnapshots().getSnapshot(position).getId();
+        String classId = getSnapshots().getSnapshot(holder.getBindingAdapterPosition()).getId();
 
-        holder.btnEdit.setOnClickListener(v -> listener.onEditClass(classId, classData));
-        holder.btnAssign.setOnClickListener(v -> listener.onAssignStudents(classId));
-        holder.btnDelete.setOnClickListener(v -> listener.onDeleteClass(classId));
+        holder.btnEdit.setOnClickListener(v -> {
+            if (listener != null) listener.onEditClass(classId, classData);
+        });
+
+        holder.btnAssign.setOnClickListener(v -> {
+            if (listener != null) listener.onAssignStudents(classId);
+        });
+
+        holder.btnDelete.setOnClickListener(v -> {
+            if (listener != null) listener.onDeleteClass(classId);
+        });
     }
 
     @NonNull

@@ -30,48 +30,55 @@ public class StudentAdapter extends FirestoreRecyclerAdapter<Student, StudentAda
         super(options);
         this.listener = listener;
         this.db = FirebaseFirestore.getInstance();
+        setHasStableIds(true); // Add this line to ensure stable IDs
     }
 
-//    @Override
-//    protected void onBindViewHolder(@NonNull StudentViewHolder holder, int position, @NonNull Student student) {
-//        holder.tvName.setText(student.getName());
-//        holder.tvClass.setText(student.getClassName());
-//        holder.tvCode.setText(student.getStudentCode());
-//
-//        // Get document ID for the current student
-//        String documentId = getSnapshots().getSnapshot(position).getId();
-//
-//        // Set click listeners for edit and delete buttons
-//        holder.btnEdit.setOnClickListener(v -> {
-//            if (listener != null) {
-//                listener.onEditStudent(documentId, student);
-//            }
-//        });
-//
-//        holder.btnDelete.setOnClickListener(v -> {
-//            if (listener != null) {
-//                listener.onDeleteStudent(documentId);
-//            }
-//        });
-//    }
-@Override
-protected void onBindViewHolder(@NonNull StudentViewHolder holder, int position, @NonNull Student student) {
-    holder.tvName.setText(student.getName());
-    holder.tvClass.setText(student.getClassName());
-    holder.tvCode.setText(student.getStudentCode());
-    if (student.getUserId() != null) {
-        db.collection("Users").document(student.getUserId())
-                .get()
-                .addOnSuccessListener(doc -> {
-                    String email = doc.getString("email");
-                    holder.tvCode.append("\nEmail: " + (email != null ? email : "Not linked"));
-                });
+    @Override
+    public long getItemId(int position) {
+        // This ensures stable IDs based on the document ID
+        return getSnapshots().getSnapshot(position).getId().hashCode();
     }
 
-    String documentId = getSnapshots().getSnapshot(position).getId();
-    holder.btnEdit.setOnClickListener(v -> listener.onEditStudent(documentId, student));
-    holder.btnDelete.setOnClickListener(v -> listener.onDeleteStudent(documentId));
-}
+    @Override
+    protected void onBindViewHolder(@NonNull StudentViewHolder holder, int position, @NonNull Student student) {
+        holder.tvName.setText(student.getName());
+        holder.tvClass.setText(student.getClassName());
+        holder.tvCode.setText(student.getStudentCode());
+
+        // Reset any previous email information
+        holder.tvEmail.setText("");
+
+        if (student.getUserId() != null) {
+            // Use the tag to avoid updating wrong views
+            final String userId = student.getUserId();
+            holder.tvEmail.setTag(userId);
+
+            db.collection("Users").document(userId)
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        // Only update if this view still belongs to the same student
+                        if (holder.tvEmail.getTag() != null && holder.tvEmail.getTag().equals(userId)) {
+                            String email = doc.getString("email");
+                            holder.tvEmail.setText(email != null ? email : "Not linked");
+                        }
+                    });
+        } else {
+            holder.tvEmail.setText("No user account");
+        }
+
+        String documentId = getSnapshots().getSnapshot(position).getId();
+        holder.btnEdit.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onEditStudent(documentId, student);
+            }
+        });
+
+        holder.btnDelete.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onDeleteStudent(documentId);
+            }
+        });
+    }
 
     @NonNull
     @Override
@@ -81,7 +88,7 @@ protected void onBindViewHolder(@NonNull StudentViewHolder holder, int position,
     }
 
     static class StudentViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvClass, tvCode;
+        TextView tvName, tvClass, tvCode, tvEmail;
         ImageButton btnEdit, btnDelete;
 
         public StudentViewHolder(@NonNull View itemView) {
@@ -89,6 +96,7 @@ protected void onBindViewHolder(@NonNull StudentViewHolder holder, int position,
             tvName = itemView.findViewById(R.id.tv_student_name);
             tvClass = itemView.findViewById(R.id.tv_class);
             tvCode = itemView.findViewById(R.id.tv_student_code);
+            tvEmail = itemView.findViewById(R.id.tv_email); // Add this TextView to your item_student.xml
             btnEdit = itemView.findViewById(R.id.btn_edit);
             btnDelete = itemView.findViewById(R.id.btn_delete);
         }

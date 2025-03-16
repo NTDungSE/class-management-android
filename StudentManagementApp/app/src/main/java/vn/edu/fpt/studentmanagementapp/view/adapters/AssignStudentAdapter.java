@@ -29,21 +29,47 @@ public class AssignStudentAdapter extends FirestoreRecyclerAdapter<Student, Assi
     public AssignStudentAdapter(@NonNull FirestoreRecyclerOptions<Student> options, AssignActionListener listener) {
         super(options);
         this.listener = listener;
+        setHasStableIds(true);
     }
 
     public void setAssignedStudentIds(List<String> assignedStudentIds) {
-        this.assignedStudentIds = assignedStudentIds;
+        if (assignedStudentIds == null) {
+            this.assignedStudentIds = new ArrayList<>();
+        } else {
+            this.assignedStudentIds = new ArrayList<>(assignedStudentIds);
+        }
         notifyDataSetChanged();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        // This ensures stable IDs based on the document ID
+        return getSnapshots().getSnapshot(position).getId().hashCode();
     }
 
     @Override
     protected void onBindViewHolder(@NonNull AssignStudentViewHolder holder, int position, @NonNull Student student) {
         holder.tvName.setText(student.getName());
         String studentId = student.getUserId() != null ? student.getUserId() : getSnapshots().getSnapshot(position).getId();
+
+        // Prevent CheckBox listener from triggering during binding
+        holder.cbAssign.setOnCheckedChangeListener(null);
         holder.cbAssign.setChecked(assignedStudentIds.contains(studentId));
 
+        // Re-add listener after setting checked state
         holder.cbAssign.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            listener.onToggleStudent(studentId, isChecked);
+            if (listener != null) {
+                listener.onToggleStudent(studentId, isChecked);
+            }
+        });
+
+        // Make the entire item clickable for better UX
+        holder.itemView.setOnClickListener(v -> {
+            boolean newState = !holder.cbAssign.isChecked();
+            holder.cbAssign.setChecked(newState);
+            if (listener != null) {
+                listener.onToggleStudent(studentId, newState);
+            }
         });
     }
 
