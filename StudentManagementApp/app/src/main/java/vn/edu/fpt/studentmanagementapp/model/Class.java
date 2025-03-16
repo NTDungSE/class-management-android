@@ -1,4 +1,4 @@
-package vn.edu.fpt.studentmanagementapp;
+package vn.edu.fpt.studentmanagementapp.model;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -20,19 +20,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LoginActivity" />
-        <activity android:name=".RegisterActivity" />
-        <activity android:name=".StudentListActivity" />
-        <activity android:name=".AddStudentActivity" />
+        <activity android:name=".view.activities.auth.LoginActivity" />
+        <activity android:name=".view.activities.auth.RegisterActivity" />
+        <activity android:name=".view.activities.students.StudentListActivity" />
+        <activity android:name=".view.activities.students.AddStudentActivity" />
         <activity
-            android:name=".TeacherDashboardActivity"
+            android:name=".view.activities.teacher.TeacherDashboardActivity"
             android:exported="false" />
         <activity
-            android:name=".StudentDashboardActivity"
+            android:name=".view.activities.student.StudentDashboardActivity"
             android:exported="false" />
-        <activity android:name=".AddClassActivity" />
-        <activity android:name=".EditClassActivity" />
-        <activity android:name=".ClassListActivity" />
-        <activity android:name=".AssignStudentsActivity" />
+        <activity android:name=".view.activities.teacher.classes.AddClassActivity" />
+        <activity android:name=".view.activities.teacher.classes.EditClassActivity" />
+        <activity android:name=".view.activities.teacher.classes.ClassListActivity" />
+        <activity android:name=".view.activities.teacher.classes.AssignStudentsActivity" />
     </application>
 </manifest>

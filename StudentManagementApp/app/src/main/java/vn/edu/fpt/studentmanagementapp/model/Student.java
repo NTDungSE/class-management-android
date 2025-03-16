@@ -1,4 +1,4 @@
-package vn.edu.fpt.studentmanagementapp;
+package vn.edu.fpt.studentmanagementapp.model;
 
 public class Student {
     private String name;

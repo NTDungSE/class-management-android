@@ -1,4 +1,4 @@
-package vn.edu.fpt.studentmanagementapp;
+package vn.edu.fpt.studentmanagementapp.view.activities.teacher.students;
 
 import android.os.Bundle;
 import android.widget.Button;
@@ -11,6 +11,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import vn.edu.fpt.studentmanagementapp.R;
 
 public class AddStudentActivity extends AppCompatActivity {
     private EditText etName, etClass, etCode, etEmail; // Added email field

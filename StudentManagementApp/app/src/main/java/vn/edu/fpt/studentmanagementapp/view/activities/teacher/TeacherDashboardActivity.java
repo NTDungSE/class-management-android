@@ -1,4 +1,4 @@
-package vn.edu.fpt.studentmanagementapp;
+package vn.edu.fpt.studentmanagementapp.view.activities.teacher;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +11,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes.ClassListActivity;
+import vn.edu.fpt.studentmanagementapp.R;
+import vn.edu.fpt.studentmanagementapp.view.activities.auth.LoginActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.teacher.students.StudentListActivity;
 
 public class TeacherDashboardActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;

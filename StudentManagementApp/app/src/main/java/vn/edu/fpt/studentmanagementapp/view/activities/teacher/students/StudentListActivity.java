@@ -1,4 +1,4 @@
-package vn.edu.fpt.studentmanagementapp;
+package vn.edu.fpt.studentmanagementapp.view.activities.teacher.students;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +14,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+
+import vn.edu.fpt.studentmanagementapp.R;
+import vn.edu.fpt.studentmanagementapp.view.adapters.StudentAdapter;
+import vn.edu.fpt.studentmanagementapp.model.Student;
+import vn.edu.fpt.studentmanagementapp.view.activities.auth.LoginActivity;
 
 public class StudentListActivity extends AppCompatActivity implements StudentAdapter.StudentActionListener {
     private FirebaseFirestore db;

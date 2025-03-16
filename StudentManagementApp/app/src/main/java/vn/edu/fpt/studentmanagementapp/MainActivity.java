@@ -13,6 +13,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import vn.edu.fpt.studentmanagementapp.view.activities.auth.LoginActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.student.StudentDashboardActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.teacher.TeacherDashboardActivity;
+
 public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
 

@@ -1,4 +1,4 @@
-package vn.edu.fpt.studentmanagementapp;
+package vn.edu.fpt.studentmanagementapp.view.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +14,9 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import vn.edu.fpt.studentmanagementapp.R;
+import vn.edu.fpt.studentmanagementapp.model.Student;
 
 public class AssignStudentAdapter extends FirestoreRecyclerAdapter<Student, AssignStudentAdapter.AssignStudentViewHolder> {
     private final AssignActionListener listener;

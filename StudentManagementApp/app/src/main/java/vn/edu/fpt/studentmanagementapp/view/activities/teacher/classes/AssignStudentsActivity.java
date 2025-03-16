@@ -1,4 +1,4 @@
-package vn.edu.fpt.studentmanagementapp;
+package vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes;
 
 import android.os.Bundle;
 import android.widget.Button;
@@ -14,6 +14,11 @@ import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import vn.edu.fpt.studentmanagementapp.R;
+import vn.edu.fpt.studentmanagementapp.model.Class;
+import vn.edu.fpt.studentmanagementapp.model.Student;
+import vn.edu.fpt.studentmanagementapp.view.adapters.AssignStudentAdapter;
 
 public class AssignStudentsActivity extends AppCompatActivity implements AssignStudentAdapter.AssignActionListener {
     private FirebaseFirestore db;

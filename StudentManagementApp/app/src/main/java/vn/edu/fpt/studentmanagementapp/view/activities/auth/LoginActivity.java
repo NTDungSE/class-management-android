@@ -1,4 +1,4 @@
-package vn.edu.fpt.studentmanagementapp;
+package vn.edu.fpt.studentmanagementapp.view.activities.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +14,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import vn.edu.fpt.studentmanagementapp.R;
+import vn.edu.fpt.studentmanagementapp.view.activities.student.StudentDashboardActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.teacher.TeacherDashboardActivity;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText etEmail, etPassword;

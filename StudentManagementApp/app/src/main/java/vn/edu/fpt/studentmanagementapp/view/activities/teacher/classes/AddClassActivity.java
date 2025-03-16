@@ -1,4 +1,4 @@
-package vn.edu.fpt.studentmanagementapp;
+package vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes;
 
 import android.os.Bundle;
 import android.widget.Button;
@@ -13,6 +13,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import vn.edu.fpt.studentmanagementapp.R;
 
 public class AddClassActivity extends AppCompatActivity {
     private EditText etClassName;
