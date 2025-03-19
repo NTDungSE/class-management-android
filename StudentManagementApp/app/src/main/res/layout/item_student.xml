@@ -24,7 +24,6 @@
                 android:id="@+id/tv_student_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/student_name"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -32,18 +31,18 @@
                 android:id="@+id/tv_class"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/student_class" />
+                android:maxLines="4"
+                android:ellipsize="end" />
 
             <TextView
                 android:id="@+id/tv_student_code"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/student_id" />
+                android:layout_height="wrap_content" />
+
             <TextView
                 android:id="@+id/tv_email"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/email" />
+                android:layout_height="wrap_content" />
         </LinearLayout>
 
         <LinearLayout

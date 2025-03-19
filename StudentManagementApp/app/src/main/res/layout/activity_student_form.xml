@@ -43,16 +43,15 @@
         android:layout_marginTop="16dp"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         app:layout_constraintTop_toBottomOf="@id/til_name"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:startIconDrawable="@android:drawable/ic_menu_agenda">
 
         <AutoCompleteTextView
-            android:id="@+id/et_class"
+            android:id="@+id/actv_class"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/student_class"
-            android:inputType="none"/>
+            android:hint="Select Classes"
+            android:inputType="none"
+            android:focusable="false"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout

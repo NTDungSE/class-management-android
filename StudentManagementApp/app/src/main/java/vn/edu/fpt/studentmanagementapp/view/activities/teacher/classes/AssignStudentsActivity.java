@@ -88,17 +88,75 @@ public class AssignStudentsActivity extends AppCompatActivity implements AssignS
 
     private void saveAssignments() {
         List<String> studentIdsList = new ArrayList<>(assignedStudentIds);
+        List<String> removedStudentIds = new ArrayList<>();
 
-        db.collection("Classes").document(classId)
-                .update("studentIds", studentIdsList)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Students assigned successfully", Toast.LENGTH_SHORT).show();
-                    // Finish after a brief delay to allow the UI to update
-                    new android.os.Handler().postDelayed(this::finish, 300);
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        // Get previously assigned students
+        db.collection("Classes").document(classId).get()
+                .addOnSuccessListener(doc -> {
+                    Class classData = doc.toObject(Class.class);
+                    if (classData != null && classData.getStudentIds() != null) {
+                        List<String> currentStudentIds = classData.getStudentIds();
+
+                        // Find removed students
+                        for (String studentId : currentStudentIds) {
+                            if (!assignedStudentIds.contains(studentId)) {
+                                removedStudentIds.add(studentId);
+                            }
+                        }
+
+                        // Update class with new students
+                        db.collection("Classes").document(classId)
+                                .update("studentIds", studentIdsList)
+                                .addOnSuccessListener(aVoid -> {
+                                    // Update each student's classes
+                                    updateStudentClasses(studentIdsList, removedStudentIds);
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    }
                 });
+    }
+
+    private void updateStudentClasses(List<String> addedStudentIds, List<String> removedStudentIds) {
+        // Add class to students
+        for (String studentId : addedStudentIds) {
+            db.collection("Students").document(studentId).get()
+                    .addOnSuccessListener(doc -> {
+                        Student student = doc.toObject(Student.class);
+                        if (student != null) {
+                            // If student already has classIds, use them, otherwise create new list
+                            List<String> classIds = student.getClassIds();
+                            if (classIds == null) {
+                                classIds = new ArrayList<>();
+                            }
+
+                            // Add current class if not already present
+                            if (!classIds.contains(classId)) {
+                                classIds.add(classId);
+                                db.collection("Students").document(studentId)
+                                        .update("classIds", classIds);
+                            }
+                        }
+                    });
+        }
+
+        // Remove class from students
+        for (String studentId : removedStudentIds) {
+            db.collection("Students").document(studentId).get()
+                    .addOnSuccessListener(doc -> {
+                        Student student = doc.toObject(Student.class);
+                        if (student != null && student.getClassIds() != null) {
+                            List<String> classIds = student.getClassIds();
+                            classIds.remove(classId);
+                            db.collection("Students").document(studentId)
+                                    .update("classIds", classIds);
+                        }
+                    });
+        }
+
+        Toast.makeText(this, "Students assigned successfully", Toast.LENGTH_SHORT).show();
+        new android.os.Handler().postDelayed(this::finish, 300);
     }
 
     @Override

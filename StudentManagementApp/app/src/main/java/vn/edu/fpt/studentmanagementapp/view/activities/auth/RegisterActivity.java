@@ -38,7 +38,6 @@ public class RegisterActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.et_email);
         etPassword = findViewById(R.id.et_password);
         etName = findViewById(R.id.et_name); // Add to layout
-        etClass = findViewById(R.id.et_class); // Add to layout
         etCode = findViewById(R.id.et_code); // Add to layout
         rgRole = findViewById(R.id.rg_role);
         Button btnRegister = findViewById(R.id.btn_register);
@@ -56,13 +55,13 @@ public class RegisterActivity extends AppCompatActivity {
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
             String name = etName.getText().toString().trim();
-            String className = etClass.getText().toString().trim();
+            String className = "";
             String studentCode = etCode.getText().toString().trim();
             int selectedRoleId = rgRole.getCheckedRadioButtonId();
             RadioButton selectedRole = findViewById(selectedRoleId);
             String role = selectedRoleId == R.id.rb_teacher ? "teacher" : "student";
 
-            if (role.equals("student") && (name.isEmpty() || className.isEmpty() || studentCode.isEmpty())) {
+            if (role.equals("student") && (name.isEmpty() || studentCode.isEmpty())) {
                 Toast.makeText(this, "Please fill in all student fields", Toast.LENGTH_SHORT).show();
                 return;
             }
