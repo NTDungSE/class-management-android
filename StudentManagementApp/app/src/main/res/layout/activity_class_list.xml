@@ -68,7 +68,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        android:text="@string/add_class"
         app:icon="@android:drawable/ic_input_add"
         app:backgroundTint="@color/purple_500"
         app:iconTint="@color/white"

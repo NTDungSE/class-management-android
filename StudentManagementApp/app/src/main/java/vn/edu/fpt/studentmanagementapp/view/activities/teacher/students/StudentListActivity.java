@@ -3,6 +3,7 @@ package vn.edu.fpt.studentmanagementapp.view.activities.teacher.students;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -32,11 +33,11 @@ public class StudentListActivity extends AppCompatActivity implements StudentAda
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // Cấu hình RecyclerView
+        // Configure RecyclerView
         RecyclerView rvStudents = findViewById(R.id.rv_students);
         rvStudents.setLayoutManager(new LinearLayoutManager(this));
 
-        // Query để lấy danh sách học sinh
+        // Query to fetch student list
         Query query = db.collection("Students");
         FirestoreRecyclerOptions<Student> options = new FirestoreRecyclerOptions.Builder<Student>()
                 .setQuery(query, Student.class)
@@ -45,10 +46,12 @@ public class StudentListActivity extends AppCompatActivity implements StudentAda
         adapter = new StudentAdapter(options, this);
         rvStudents.setAdapter(adapter);
 
-        // Thêm học sinh mới
-        FloatingActionButton fabAddStudent = findViewById(R.id.fab_add_student);
-        fabAddStudent.setOnClickListener(v ->
-                startActivity(new Intent(this, AddStudentActivity.class)));
+        // Add new student
+        ExtendedFloatingActionButton fabAddStudent = findViewById(R.id.fab_add_student);
+        fabAddStudent.setOnClickListener(v -> {
+            Intent intent = new Intent(this, StudentFormActivity.class);
+            startActivity(intent);
+        });
 
         // Setup logout button
         Button btnLogout = findViewById(R.id.btn_logout);
@@ -61,11 +64,12 @@ public class StudentListActivity extends AppCompatActivity implements StudentAda
 
     @Override
     public void onEditStudent(String documentId, Student student) {
-        Intent intent = new Intent(this, EditStudentActivity.class);
+        Intent intent = new Intent(this, StudentFormActivity.class);
         intent.putExtra("STUDENT_ID", documentId);
         intent.putExtra("STUDENT_NAME", student.getName());
         intent.putExtra("STUDENT_CLASS", student.getClassName());
         intent.putExtra("STUDENT_CODE", student.getStudentCode());
+        intent.putExtra("USER_ID", student.getUserId());
         startActivity(intent);
     }
 
@@ -79,9 +83,11 @@ public class StudentListActivity extends AppCompatActivity implements StudentAda
                             .delete()
                             .addOnSuccessListener(aVoid -> {
                                 // Success message
+                                Toast.makeText(this, "Student deleted successfully", Toast.LENGTH_SHORT).show();
                             })
                             .addOnFailureListener(e -> {
                                 // Error message
+                                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             });
                 })
                 .setNegativeButton("Cancel", null)
@@ -93,6 +99,7 @@ public class StudentListActivity extends AppCompatActivity implements StudentAda
         super.onStart();
         adapter.startListening();
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -100,6 +107,7 @@ public class StudentListActivity extends AppCompatActivity implements StudentAda
             adapter.notifyDataSetChanged();
         }
     }
+
     @Override
     protected void onStop() {
         super.onStop();

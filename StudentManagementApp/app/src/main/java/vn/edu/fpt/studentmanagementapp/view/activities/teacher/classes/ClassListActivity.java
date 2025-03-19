@@ -46,7 +46,8 @@ public class ClassListActivity extends AppCompatActivity implements ClassAdapter
         rvClasses.setAdapter(adapter);
 
         ExtendedFloatingActionButton fabAddClass = findViewById(R.id.fab_add_class);
-        fabAddClass.setOnClickListener(v -> startActivity(new Intent(this, AddClassActivity.class)));
+        fabAddClass.setOnClickListener(v ->
+                startActivity(new Intent(this, ClassFormActivity.class)));
 
         Button btnLogout = findViewById(R.id.btn_logout);
         btnLogout.setOnClickListener(v -> {
@@ -58,7 +59,7 @@ public class ClassListActivity extends AppCompatActivity implements ClassAdapter
 
     @Override
     public void onEditClass(String classId, Class classData) {
-        Intent intent = new Intent(this, EditClassActivity.class);
+        Intent intent = new Intent(this, ClassFormActivity.class);
         intent.putExtra("CLASS_ID", classId);
         intent.putExtra("CLASS_NAME", classData.getName());
         startActivity(intent);

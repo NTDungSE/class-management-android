@@ -38,4 +38,8 @@
     <string name="save_assignments">Save Assignments</string>
     <string name="no_classes_available">No classes available</string>
     <string name="no_students_available">No students available</string>
+    <string name="default_web_client_id">779412800115-fblhc53j72so8jbkinctd2s6ks8sbm2o.apps.googleusercontent.com</string>
+    <string name="class_added">Class added successfully</string>
+    <string name="class_updated">Class updated successfully</string>
+    <string name="please_enter_class_name">Please enter class name</string>
 </resources>
