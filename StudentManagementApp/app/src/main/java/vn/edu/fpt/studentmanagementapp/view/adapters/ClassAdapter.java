@@ -1,5 +1,6 @@
 package vn.edu.fpt.studentmanagementapp.view.adapters;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Class;
+import vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes.ClassDetailActivity;
 
 public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.ClassViewHolder> {
     private final ClassActionListener listener;
@@ -44,6 +46,14 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
     protected void onBindViewHolder(@NonNull ClassViewHolder holder, int position, @NonNull Class classData) {
         holder.tvName.setText(classData.getName());
         String classId = getSnapshots().getSnapshot(holder.getBindingAdapterPosition()).getId();
+
+        // Make the whole item clickable to see class details
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), ClassDetailActivity.class);
+            intent.putExtra("CLASS_ID", classId);
+            intent.putExtra("CLASS_NAME", classData.getName());
+            v.getContext().startActivity(intent);
+        });
 
         holder.btnEdit.setOnClickListener(v -> {
             if (listener != null) listener.onEditClass(classId, classData);

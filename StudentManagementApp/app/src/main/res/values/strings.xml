@@ -42,4 +42,10 @@
     <string name="class_added">Class added successfully</string>
     <string name="class_updated">Class updated successfully</string>
     <string name="please_enter_class_name">Please enter class name</string>
+    <string name="class_details">Class Details</string>
+    <string name="students_in_class">Students in Class</string>
+    <string name="no_students_in_this_class">No students in this class</string>
+    <string name="student_count">%d Students</string>
+    <string name="assign_students">Assign Students</string>
+    <string name="delete_class">Delete Class</string>
 </resources>

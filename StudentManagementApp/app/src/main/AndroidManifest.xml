@@ -26,6 +26,7 @@
         <activity android:name=".view.activities.teacher.students.StudentListActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassFormActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassListActivity" />
+        <activity android:name=".view.activities.teacher.classes.ClassDetailActivity" />
         <activity android:name=".view.activities.teacher.classes.AssignStudentsActivity" />
         <activity android:name=".view.activities.teacher.TeacherDashboardActivity" />
         <activity android:name=".view.activities.student.StudentDashboardActivity" />
