@@ -85,8 +85,7 @@ public class StudentDashboardActivity extends AppCompatActivity {
                         if (student != null) {
                             // Start displaying basic info
                             StringBuilder studentInfo = new StringBuilder();
-                            studentInfo.append("Name: ").append(student.getName())
-                                    .append("\nCode: ").append(student.getStudentCode());
+                            studentInfo.append("Name: ").append(student.getName());
 
                             // Handle class information
                             if (student.getClassIds() != null && !student.getClassIds().isEmpty()) {
@@ -97,9 +96,7 @@ public class StudentDashboardActivity extends AppCompatActivity {
                                     // Update the student info with class names
                                     StringBuilder updatedInfo = new StringBuilder();
                                     updatedInfo.append("Name: ").append(student.getName())
-                                            .append("\nCode: ").append(student.getStudentCode())
                                             .append("\nClasses: ").append(classNames);
-
                                     tvStudentInfo.setText(updatedInfo.toString());
                                 });
                             } else {

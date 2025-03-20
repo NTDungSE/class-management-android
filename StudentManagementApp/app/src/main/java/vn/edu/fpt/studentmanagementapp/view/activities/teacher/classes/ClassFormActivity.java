@@ -10,9 +10,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import vn.edu.fpt.studentmanagementapp.R;
 
@@ -45,7 +45,6 @@ public class ClassFormActivity extends AppCompatActivity {
         }
 
         btnSave.setOnClickListener(v -> handleSave());
-
         btnCancel.setOnClickListener(v -> finish());
     }
 
@@ -66,15 +65,19 @@ public class ClassFormActivity extends AppCompatActivity {
     }
 
     private void createNewClass(String className, String teacherId) {
+        // Generate a unique class code (like Google Classroom)
+        String classCode = generateClassCode();
+
         Map<String, Object> classData = new HashMap<>();
         classData.put("name", className);
         classData.put("teacherId", teacherId);
-        classData.put("studentIds", new ArrayList<String>());
+        classData.put("classCode", classCode);
+        classData.put("enrolledStudents", new HashMap<String, String>());
 
         db.collection("Classes")
                 .add(classData)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(this, R.string.class_added, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Class created! Class code: " + classCode, Toast.LENGTH_LONG).show();
                     finish();
                 })
                 .addOnFailureListener(e ->
@@ -93,5 +96,18 @@ public class ClassFormActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    // Generate a Google Classroom style class code
+    private String generateClassCode() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        StringBuilder codeBuilder = new StringBuilder();
+        Random random = new Random();
+
+        for (int i = 0; i < 7; i++) {
+            codeBuilder.append(chars.charAt(random.nextInt(chars.length())));
+        }
+
+        return codeBuilder.toString();
     }
 }

@@ -5,69 +5,98 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp">
+        android:orientation="vertical"
+        android:padding="16dp">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_person_24"
+                android:layout_marginEnd="16dp"
+                app:tint="@color/purple_500" />
 
             <TextView
                 android:id="@+id/tv_student_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"/>
+
+            <com.google.android.material.chip.ChipGroup
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:singleLine="true"
+                app:chipSpacing="4dp">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/btn_edit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    app:chipIcon="@drawable/ic_edit_16"
+                    app:chipBackgroundColor="@color/purple_100"
+                    app:chipIconTint="@color/purple_500"/>
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/btn_delete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.Material3.Chip.Assist"
+                    app:chipIcon="@drawable/ic_delete_16"
+                    app:chipBackgroundColor="@color/red_100"
+                    app:chipIconTint="@color/red_500"/>
+            </com.google.android.material.chip.ChipGroup>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp"
+            android:divider="@drawable/divider_horizontal"
+            android:showDividers="middle">
+
+            <TextView
+                android:id="@+id/tv_student_code"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:drawableStart="@drawable/ic_badge_16"
+                android:drawablePadding="8dp"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"/>
+
+            <TextView
+                android:id="@+id/tv_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_email_16"
+                android:drawablePadding="8dp"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"/>
 
             <TextView
                 android:id="@+id/tv_class"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="4"
-                android:ellipsize="end" />
-
-            <TextView
-                android:id="@+id/tv_student_code"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/tv_email"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:drawableStart="@drawable/ic_group_16"
+                android:drawablePadding="8dp"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"/>
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <ImageButton
-                android:id="@+id/btn_edit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@android:drawable/ic_menu_edit"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Edit student"
-                android:padding="8dp" />
-
-            <ImageButton
-                android:id="@+id/btn_delete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@android:drawable/ic_menu_delete"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Delete student"
-                android:padding="8dp" />
-        </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

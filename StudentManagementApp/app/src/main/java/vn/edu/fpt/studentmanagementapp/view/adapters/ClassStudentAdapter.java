@@ -1,11 +1,13 @@
 package vn.edu.fpt.studentmanagementapp.view.adapters;
 
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -15,9 +17,27 @@ import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Student;
 
 public class ClassStudentAdapter extends RecyclerView.Adapter<ClassStudentAdapter.StudentViewHolder> {
-    private List<Student> students = new ArrayList<>();
+    private List<StudentWithStatus> students = new ArrayList<>();
+
+    public static class StudentWithStatus {
+        public Student student;
+        public String status;
+
+        public StudentWithStatus(Student student, String status) {
+            this.student = student;
+            this.status = status;
+        }
+    }
 
     public void setStudents(List<Student> students) {
+        this.students.clear();
+        for (Student student : students) {
+            this.students.add(new StudentWithStatus(student, "enrolled"));
+        }
+        notifyDataSetChanged();
+    }
+
+    public void setStudentsWithStatus(List<StudentWithStatus> students) {
         this.students = new ArrayList<>(students);
         notifyDataSetChanged();
     }
@@ -31,10 +51,32 @@ public class ClassStudentAdapter extends RecyclerView.Adapter<ClassStudentAdapte
 
     @Override
     public void onBindViewHolder(@NonNull StudentViewHolder holder, int position) {
-        Student student = students.get(position);
+        StudentWithStatus studentWithStatus = students.get(position);
+        Student student = studentWithStatus.student;
+        String status = studentWithStatus.status;
+
         holder.tvName.setText(student.getName());
-        holder.tvCode.setText(student.getStudentCode());
-        holder.tvEmail.setText(student.getUserId() != null ? "User ID: " + student.getUserId() : "No user account");
+        holder.tvEmail.setText(student.getEmail());
+
+        if (!student.isRegistered()) {
+            holder.tvEmail.append(" (Not Registered)");
+        }
+
+        // Display enrollment status
+        holder.tvStatus.setText(capitalizeFirstLetter(status));
+
+        // Set appropriate background color based on status
+        int colorResId = status.equals("enrolled") ?
+                R.color.status_enrolled : R.color.status_invited;
+        int color = ContextCompat.getColor(holder.itemView.getContext(), colorResId);
+        holder.tvStatus.setBackgroundTintList(ColorStateList.valueOf(color));
+    }
+
+    private String capitalizeFirstLetter(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        return text.substring(0, 1).toUpperCase() + text.substring(1);
     }
 
     @Override
@@ -43,13 +85,13 @@ public class ClassStudentAdapter extends RecyclerView.Adapter<ClassStudentAdapte
     }
 
     static class StudentViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvCode, tvEmail;
+        TextView tvName, tvEmail, tvStatus;
 
         public StudentViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tv_student_name);
-            tvCode = itemView.findViewById(R.id.tv_student_code);
             tvEmail = itemView.findViewById(R.id.tv_student_email);
+            tvStatus = itemView.findViewById(R.id.tv_student_status);
         }
     }
 }

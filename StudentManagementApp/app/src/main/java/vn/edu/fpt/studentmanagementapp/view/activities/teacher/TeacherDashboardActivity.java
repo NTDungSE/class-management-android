@@ -15,7 +15,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes.ClassListActivity;
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.view.activities.auth.LoginActivity;
-import vn.edu.fpt.studentmanagementapp.view.activities.teacher.students.StudentListActivity;
 
 public class TeacherDashboardActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
@@ -32,7 +31,6 @@ public class TeacherDashboardActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
         tvWelcome = findViewById(R.id.tv_welcome);
-        Button btnManageStudents = findViewById(R.id.btn_manage_students);
         Button btnManageClasses = findViewById(R.id.btn_manage_classes);
         Button btnManageAssignments = findViewById(R.id.btn_manage_assignments);
         Button btnReviewSubmissions = findViewById(R.id.btn_review_submissions);
@@ -44,9 +42,6 @@ public class TeacherDashboardActivity extends AppCompatActivity {
         }
 
         // Set up button click listeners
-        btnManageStudents.setOnClickListener(v -> {
-            startActivity(new Intent(TeacherDashboardActivity.this, StudentListActivity.class));
-        });
 
         btnManageClasses.setOnClickListener(v -> {
             startActivity(new Intent(TeacherDashboardActivity.this, ClassListActivity.class));

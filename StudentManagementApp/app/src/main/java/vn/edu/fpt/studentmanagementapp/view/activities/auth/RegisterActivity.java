@@ -38,7 +38,6 @@ public class RegisterActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.et_email);
         etPassword = findViewById(R.id.et_password);
         etName = findViewById(R.id.et_name); // Add to layout
-        etCode = findViewById(R.id.et_code); // Add to layout
         rgRole = findViewById(R.id.rg_role);
         Button btnRegister = findViewById(R.id.btn_register);
 
@@ -55,13 +54,10 @@ public class RegisterActivity extends AppCompatActivity {
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
             String name = etName.getText().toString().trim();
-            String className = "";
-            String studentCode = etCode.getText().toString().trim();
             int selectedRoleId = rgRole.getCheckedRadioButtonId();
-            RadioButton selectedRole = findViewById(selectedRoleId);
             String role = selectedRoleId == R.id.rb_teacher ? "teacher" : "student";
 
-            if (role.equals("student") && (name.isEmpty() || studentCode.isEmpty())) {
+            if (role.equals("student") && name.isEmpty() ) {
                 Toast.makeText(this, "Please fill in all student fields", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -82,9 +78,10 @@ public class RegisterActivity extends AppCompatActivity {
                             if (role.equals("student")) {
                                 Map<String, Object> student = new HashMap<>();
                                 student.put("name", name);
-                                student.put("className", className);
-                                student.put("studentCode", studentCode);
-                                student.put("userId", userId); // Link to user
+                                student.put("userId", userId);
+                                student.put("email", email);
+                                // Initialize with empty map for enrolled classes
+                                student.put("enrolledClasses", new HashMap<String, String>());
                                 db.collection("Students").document(userId) // Use userId as document ID
                                         .set(student)
                                         .addOnSuccessListener(aVoid -> {

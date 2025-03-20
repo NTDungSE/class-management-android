@@ -110,20 +110,6 @@
                 android:hint="Name"
                 android:inputType="text"/>
         </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_code"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Student ID"
-                android:inputType="text"/>
-        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
     <com.google.android.material.button.MaterialButton

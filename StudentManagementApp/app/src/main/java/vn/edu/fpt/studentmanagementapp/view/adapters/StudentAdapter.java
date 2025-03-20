@@ -45,7 +45,6 @@ public class StudentAdapter extends FirestoreRecyclerAdapter<Student, StudentAda
     @Override
     protected void onBindViewHolder(@NonNull StudentViewHolder holder, int position, @NonNull Student model) {
         holder.tvStudentName.setText(model.getName());
-        holder.tvStudentCode.setText("Code: " + model.getStudentCode());
 
         // Display classes loading message while we fetch them
         holder.tvClass.setText("Classes: Loading...");

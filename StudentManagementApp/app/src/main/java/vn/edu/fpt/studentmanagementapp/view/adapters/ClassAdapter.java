@@ -22,14 +22,20 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
 
     public interface ClassActionListener {
         void onEditClass(String classId, Class classData);
-        void onAssignStudents(String classId);
+        void onManageStudents(String classId, Class classData);
         void onDeleteClass(String classId);
+        void onStudentRemoved(String identifier);
     }
 
     public ClassAdapter(@NonNull FirestoreRecyclerOptions<Class> options, ClassActionListener listener) {
         super(options);
         this.listener = listener;
         setHasStableIds(true);
+    }
+    private OnStudentRemovedListener removalListener;
+
+    public void setOnStudentRemovedListener(OnStudentRemovedListener listener) {
+        this.removalListener = listener;
     }
 
     @Override
@@ -47,6 +53,27 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
         holder.tvName.setText(classData.getName());
         String classId = getSnapshots().getSnapshot(holder.getBindingAdapterPosition()).getId();
 
+        // Show enrolled count if available
+        if (classData.getEnrolledStudents() != null) {
+            int count = classData.getEnrolledStudentCount() + classData.getInvitedStudentCount();
+            holder.tvStudentCount.setText(count + " Students");
+            holder.tvStudentCount.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvStudentCount.setVisibility(View.GONE);
+        }
+
+        if (student.isRegistered()) {
+            holder.btnRemove.setVisibility(View.VISIBLE);
+            holder.btnRemove.setOnClickListener(v -> {
+                if (removalListener != null) {
+                    removalListener.onStudentRemoved(student.getUserId());
+                }
+            });
+        } else {
+            holder.btnRemove.setVisibility(View.GONE);
+        }
+
+
         // Make the whole item clickable to see class details
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), ClassDetailActivity.class);
@@ -59,8 +86,8 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
             if (listener != null) listener.onEditClass(classId, classData);
         });
 
-        holder.btnAssign.setOnClickListener(v -> {
-            if (listener != null) listener.onAssignStudents(classId);
+        holder.btnManage.setOnClickListener(v -> {
+            if (listener != null) listener.onManageStudents(classId, classData);
         });
 
         holder.btnDelete.setOnClickListener(v -> {
@@ -76,14 +103,15 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
     }
 
     static class ClassViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName;
-        ImageButton btnEdit, btnAssign, btnDelete;
+        TextView tvName, tvStudentCount;
+        ImageButton btnEdit, btnManage, btnDelete;
 
         public ClassViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tv_class_name);
+            tvStudentCount = itemView.findViewById(R.id.tv_student_count);
             btnEdit = itemView.findViewById(R.id.btn_edit);
-            btnAssign = itemView.findViewById(R.id.btn_assign);
+            //btnManage = itemView.findViewById(R.id.btn_manage);
             btnDelete = itemView.findViewById(R.id.btn_delete);
         }
     }

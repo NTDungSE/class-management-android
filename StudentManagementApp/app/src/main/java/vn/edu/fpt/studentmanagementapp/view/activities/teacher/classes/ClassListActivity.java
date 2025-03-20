@@ -16,8 +16,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
+import java.util.Map;
+
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Class;
+import vn.edu.fpt.studentmanagementapp.model.Student;
 import vn.edu.fpt.studentmanagementapp.view.activities.auth.LoginActivity;
 import vn.edu.fpt.studentmanagementapp.view.adapters.ClassAdapter;
 
@@ -29,7 +32,7 @@ public class ClassListActivity extends AppCompatActivity implements ClassAdapter
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_class_list); // New layout needed
+        setContentView(R.layout.activity_class_list);
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
@@ -66,9 +69,11 @@ public class ClassListActivity extends AppCompatActivity implements ClassAdapter
     }
 
     @Override
-    public void onAssignStudents(String classId) {
-        startActivity(new Intent(this, AssignStudentsActivity.class)
-                .putExtra("CLASS_ID", classId));
+    public void onManageStudents(String classId, Class classData) {
+        Intent intent = new Intent(this, ManageStudentsActivity.class);
+        intent.putExtra("CLASS_ID", classId);
+        intent.putExtra("CLASS_NAME", classData.getName());
+        startActivity(intent);
     }
 
     @Override
@@ -77,15 +82,75 @@ public class ClassListActivity extends AppCompatActivity implements ClassAdapter
                 .setTitle("Delete Class")
                 .setMessage("Are you sure you want to delete this class?")
                 .setPositiveButton("Delete", (dialog, which) -> {
+                    // First get the class to find students to update
                     db.collection("Classes").document(classId)
-                            .delete()
-                            .addOnSuccessListener(aVoid -> {})
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            .get()
+                            .addOnSuccessListener(document -> {
+                                Class classData = document.toObject(Class.class);
+                                if (classData != null && classData.getEnrolledStudents() != null) {
+                                    // Remove class from students
+                                    removeClassFromStudents(classId, classData);
+                                }
+
+                                // Now delete the class
+                                db.collection("Classes").document(classId)
+                                        .delete()
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "Class deleted successfully", Toast.LENGTH_SHORT).show();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        });
                             });
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    private void removeClassFromStudents(String classId, Class classData) {
+        // For each student in the class
+        for (Map.Entry<String, String> entry : classData.getEnrolledStudents().entrySet()) {
+            String identifier = entry.getKey();
+
+            // Determine if this is an email or userId
+            if (identifier.contains("@")) {
+                // Query by email
+                db.collection("Students")
+                        .whereEqualTo("email", identifier)
+                        .get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            if (!querySnapshot.isEmpty()) {
+                                String studentId = querySnapshot.getDocuments().get(0).getId();
+                                updateStudentClasses(studentId, classId);
+                            }
+                        });
+            } else {
+                // Direct update by userId
+                db.collection("Students")
+                        .document(identifier)
+                        .get()
+                        .addOnSuccessListener(doc -> {
+                            if (doc.exists()) {
+                                updateStudentClasses(identifier, classId);
+                            }
+                        });
+            }
+        }
+    }
+
+    private void updateStudentClasses(String studentId, String classId) {
+        db.collection("Students").document(studentId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    Student student = doc.toObject(Student.class);
+                    if (student != null && student.getEnrolledClasses() != null) {
+                        Map<String, String> classes = student.getEnrolledClasses();
+                        classes.remove(classId);
+
+                        db.collection("Students").document(studentId)
+                                .update("enrolledClasses", classes);
+                    }
+                });
     }
 
     @Override

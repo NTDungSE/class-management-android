@@ -1,5 +1,6 @@
 package vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -10,11 +11,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Class;
@@ -68,22 +70,37 @@ public class ClassDetailActivity extends AppCompatActivity {
 
         // Load class and its students
         loadClassDetails();
+
+        FloatingActionButton fabInvite = findViewById(R.id.fab_invite);
+        fabInvite.setOnClickListener(v -> {
+            Intent intent = new Intent(ClassDetailActivity.this, ClassInviteActivity.class);
+            intent.putExtra("CLASS_ID", classId);
+            intent.putExtra("CLASS_NAME", className);
+            startActivity(intent);
+        });
     }
 
     private void loadClassDetails() {
         db.collection("Classes").document(classId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     Class classData = documentSnapshot.toObject(Class.class);
-                    if (classData == null || classData.getStudentIds() == null || classData.getStudentIds().isEmpty()) {
+                    if (classData == null || classData.getEnrolledStudents() == null ||
+                            classData.getEnrolledStudents().isEmpty()) {
                         showNoStudentsView();
                         return;
                     }
 
-                    // Update student count
-                    tvStudentCount.setText(getString(R.string.student_count, classData.getStudentIds().size()));
+                    // Update student count with enrolled and invited counts
+                    int enrolledCount = classData.getEnrolledStudentCount();
+                    int invitedCount = classData.getInvitedStudentCount();
+                    int totalCount = enrolledCount + invitedCount;
+
+                    String countText = getString(R.string.student_count_detail,
+                            totalCount, enrolledCount, invitedCount);
+                    tvStudentCount.setText(countText);
 
                     // Fetch all students in this class
-                    fetchStudentsInClass(classData.getStudentIds());
+                    fetchStudentsInClass(classData.getEnrolledStudents());
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Error loading class: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -91,50 +108,103 @@ public class ClassDetailActivity extends AppCompatActivity {
                 });
     }
 
-    private void fetchStudentsInClass(List<String> studentIds) {
-        List<Student> students = new ArrayList<>();
+    private void fetchStudentsInClass(Map<String, String> enrolledStudents) {
+        if (enrolledStudents.isEmpty()) {
+            showNoStudentsView();
+            return;
+        }
 
-        // Create a counter to track when all async operations are complete
+        List<ClassStudentAdapter.StudentWithStatus> studentsWithStatus = new ArrayList<>();
         final int[] completedQueries = {0};
-        final int totalQueries = studentIds.size();
+        final int totalQueries = enrolledStudents.size();
 
-        for (String studentId : studentIds) {
-            db.collection("Students").document(studentId).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        completedQueries[0]++;
+        for (Map.Entry<String, String> entry : enrolledStudents.entrySet()) {
+            String identifier = entry.getKey();
+            String status = entry.getValue();
 
-                        if (documentSnapshot.exists()) {
-                            Student student = documentSnapshot.toObject(Student.class);
-                            if (student != null) {
-                                students.add(student);
+            // Determine if this is an email or userId
+            if (identifier.contains("@")) {
+                // Query by email
+                db.collection("Students")
+                        .whereEqualTo("email", identifier)
+                        .get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            completedQueries[0]++;
+
+                            if (!querySnapshot.isEmpty()) {
+                                Student student = querySnapshot.getDocuments().get(0).toObject(Student.class);
+                                if (student != null) {
+                                    studentsWithStatus.add(new ClassStudentAdapter.StudentWithStatus(student, status));
+                                }
                             }
-                        }
 
-                        // Check if all queries are complete
-                        if (completedQueries[0] == totalQueries) {
-                            updateStudentsList(students);
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        completedQueries[0]++;
+                            checkIfComplete(completedQueries[0], totalQueries, studentsWithStatus);
+                        })
+                        .addOnFailureListener(e -> {
+                            completedQueries[0]++;
+                            checkIfComplete(completedQueries[0], totalQueries, studentsWithStatus);
+                        });
+            } else {
+                // Query by userId
+                db.collection("Students")
+                        .whereEqualTo("userId", identifier)
+                        .get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            completedQueries[0]++;
 
-                        // Check if all queries are complete
-                        if (completedQueries[0] == totalQueries) {
-                            updateStudentsList(students);
-                        }
-                    });
+                            if (!querySnapshot.isEmpty()) {
+                                Student student = querySnapshot.getDocuments().get(0).toObject(Student.class);
+                                if (student != null) {
+                                    studentsWithStatus.add(new ClassStudentAdapter.StudentWithStatus(student, status));
+                                }
+                            }
+
+                            checkIfComplete(completedQueries[0], totalQueries, studentsWithStatus);
+                        })
+                        .addOnFailureListener(e -> {
+                            completedQueries[0]++;
+                            checkIfComplete(completedQueries[0], totalQueries, studentsWithStatus);
+                        });
+            }
         }
     }
 
-    private void updateStudentsList(List<Student> students) {
+    private void checkIfComplete(int completed, int total, List<ClassStudentAdapter.StudentWithStatus> students) {
+        if (completed == total) {
+            updateStudentsList(students);
+        }
+    }
+
+    private void updateStudentsList(List<ClassStudentAdapter.StudentWithStatus> students) {
         if (students.isEmpty()) {
             showNoStudentsView();
         } else {
             tvNoStudents.setVisibility(View.GONE);
             rvStudents.setVisibility(View.VISIBLE);
-            adapter.setStudents(students);
+            adapter.setStudentsWithStatus(students);
+            adapter.setOnStudentRemovedListener(this::handleStudentRemoval);
         }
     }
+
+    private void handleStudentRemoval(String identifier) {
+        db.collection("Classes").document(classId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Class classData = documentSnapshot.toObject(Class.class);
+                    if (classData != null) {
+                        Map<String, String> students = classData.getEnrolledStudents();
+                        students.remove(identifier);
+                        db.collection("Classes").document(classId)
+                                .update("enrolledStudents", students)
+                                .addOnSuccessListener(aVoid -> {
+                                    loadClassDetails();
+                                    removeFromStudentDocument(identifier);
+                                });
+                    }
+                });
+    }
+
+
+
 
     private void showNoStudentsView() {
         tvNoStudents.setVisibility(View.VISIBLE);
