@@ -70,7 +70,7 @@ public class ClassListActivity extends AppCompatActivity implements ClassAdapter
 
     @Override
     public void onManageStudents(String classId, Class classData) {
-        Intent intent = new Intent(this, ManageStudentsActivity.class);
+        Intent intent = new Intent(this, ClassInviteActivity.class);
         intent.putExtra("CLASS_ID", classId);
         intent.putExtra("CLASS_NAME", classData.getName());
         startActivity(intent);

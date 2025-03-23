@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -30,6 +31,14 @@ public class ClassFormActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
+        // Setup toolbar
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> finish());
+
         etClassName = findViewById(R.id.et_class_name);
         Button btnSave = findViewById(R.id.btn_save);
         Button btnCancel = findViewById(R.id.btn_cancel);
@@ -42,6 +51,13 @@ public class ClassFormActivity extends AppCompatActivity {
             String className = getIntent().getStringExtra("CLASS_NAME");
             etClassName.setText(className);
             btnSave.setText(R.string.update);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Edit Class");
+            }
+        } else {
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setTitle("Create New Class");
+            }
         }
 
         btnSave.setOnClickListener(v -> handleSave());

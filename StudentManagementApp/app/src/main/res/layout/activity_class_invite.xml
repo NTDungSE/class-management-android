@@ -15,6 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/purple_500"
+            app:navigationIcon="@android:drawable/ic_menu_revert"
             app:title="Invite Students"
             app:titleTextColor="@color/white"/>
 

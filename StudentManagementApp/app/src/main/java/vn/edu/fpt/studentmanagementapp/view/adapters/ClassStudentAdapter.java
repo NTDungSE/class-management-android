@@ -4,6 +4,7 @@ import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,6 +29,15 @@ public class ClassStudentAdapter extends RecyclerView.Adapter<ClassStudentAdapte
             this.status = status;
         }
     }
+
+    public interface OnStudentRemovedListener {
+        void onStudentRemoved(String identifier);
+    }
+    private OnStudentRemovedListener removalListener;
+    public void setOnStudentRemovedListener(OnStudentRemovedListener listener) {
+        this.removalListener = listener;
+    }
+
 
     public void setStudents(List<Student> students) {
         this.students.clear();
@@ -58,8 +68,15 @@ public class ClassStudentAdapter extends RecyclerView.Adapter<ClassStudentAdapte
         holder.tvName.setText(student.getName());
         holder.tvEmail.setText(student.getEmail());
 
-        if (!student.isRegistered()) {
-            holder.tvEmail.append(" (Not Registered)");
+        if (student.isRegistered()) {
+            holder.btnRemove.setVisibility(View.VISIBLE);
+            holder.btnRemove.setOnClickListener(v -> {
+                if (removalListener != null) {
+                    removalListener.onStudentRemoved(student.getUserId());
+                }
+            });
+        } else {
+            holder.btnRemove.setVisibility(View.GONE);
         }
 
         // Display enrollment status
@@ -86,12 +103,14 @@ public class ClassStudentAdapter extends RecyclerView.Adapter<ClassStudentAdapte
 
     static class StudentViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvEmail, tvStatus;
+        ImageButton btnRemove;
 
         public StudentViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tv_student_name);
             tvEmail = itemView.findViewById(R.id.tv_student_email);
             tvStatus = itemView.findViewById(R.id.tv_student_status);
+            btnRemove = itemView.findViewById(R.id.btn_remove);
         }
     }
 }

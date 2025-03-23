@@ -193,57 +193,11 @@ public class LoginActivity extends AppCompatActivity {
                         startActivity(new Intent(LoginActivity.this, TeacherDashboardActivity.class));
                     } else {
                         // If student role, prompt for additional info
-                        showStudentInfoDialog(userId);
+                        startActivity(new Intent(LoginActivity.this, StudentDashboardActivity.class));
                     }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(LoginActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void showStudentInfoDialog(String userId) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        View view = getLayoutInflater().inflate(R.layout.dialog_student_info, null);
-
-        EditText etName = view.findViewById(R.id.et_name);
-        EditText etClass = view.findViewById(R.id.et_class);
-        EditText etCode = view.findViewById(R.id.et_code);
-
-        builder.setView(view)
-                .setTitle("Student Information")
-                .setPositiveButton("Save", (dialog, which) -> {
-                    String name = etName.getText().toString().trim();
-                    String className = etClass.getText().toString().trim();
-                    String studentCode = etCode.getText().toString().trim();
-
-                    if (name.isEmpty() || className.isEmpty() || studentCode.isEmpty()) {
-                        Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    saveStudentInfo(userId, name, className, studentCode);
-                })
-                .setCancelable(false)
-                .create()
-                .show();
-    }
-
-    private void saveStudentInfo(String userId, String name, String className, String studentCode) {
-        Map<String, Object> student = new HashMap<>();
-        student.put("name", name);
-        student.put("className", className);
-        student.put("studentCode", studentCode);
-        student.put("userId", userId);
-
-        FirebaseFirestore.getInstance().collection("Students").document(userId)
-                .set(student)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Student information saved", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(LoginActivity.this, StudentDashboardActivity.class));
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 

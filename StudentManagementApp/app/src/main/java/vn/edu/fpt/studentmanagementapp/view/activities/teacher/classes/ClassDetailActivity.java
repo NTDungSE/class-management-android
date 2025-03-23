@@ -2,6 +2,7 @@ package vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +16,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +34,7 @@ public class ClassDetailActivity extends AppCompatActivity {
     private ClassStudentAdapter adapter;
     private String classId;
     private String className;
+    private static final String TAG = "ClassDetailActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +60,11 @@ public class ClassDetailActivity extends AppCompatActivity {
         }
 
         // Setup toolbar
-        toolbar.setTitle("Class Details");
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Class Details");
+        }
         toolbar.setNavigationOnClickListener(v -> finish());
 
         // Setup RecyclerView
@@ -78,6 +85,13 @@ public class ClassDetailActivity extends AppCompatActivity {
             intent.putExtra("CLASS_NAME", className);
             startActivity(intent);
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh data when returning from other activities
+        loadClassDetails();
     }
 
     private void loadClassDetails() {
@@ -103,6 +117,7 @@ public class ClassDetailActivity extends AppCompatActivity {
                     fetchStudentsInClass(classData.getEnrolledStudents());
                 })
                 .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error loading class: " + e.getMessage(), e);
                     Toast.makeText(this, "Error loading class: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     showNoStudentsView();
                 });
@@ -136,32 +151,36 @@ public class ClassDetailActivity extends AppCompatActivity {
                                 if (student != null) {
                                     studentsWithStatus.add(new ClassStudentAdapter.StudentWithStatus(student, status));
                                 }
+                            } else {
+                                // Create a placeholder student if not found
+                                Student placeholderStudent = new Student("Invited User", identifier);
+                                studentsWithStatus.add(new ClassStudentAdapter.StudentWithStatus(placeholderStudent, status));
                             }
 
                             checkIfComplete(completedQueries[0], totalQueries, studentsWithStatus);
                         })
                         .addOnFailureListener(e -> {
+                            Log.e(TAG, "Error fetching student by email: " + e.getMessage(), e);
                             completedQueries[0]++;
                             checkIfComplete(completedQueries[0], totalQueries, studentsWithStatus);
                         });
             } else {
                 // Query by userId
                 db.collection("Students")
-                        .whereEqualTo("userId", identifier)
+                        .document(identifier)
                         .get()
-                        .addOnSuccessListener(querySnapshot -> {
+                        .addOnSuccessListener(documentSnapshot -> {
                             completedQueries[0]++;
 
-                            if (!querySnapshot.isEmpty()) {
-                                Student student = querySnapshot.getDocuments().get(0).toObject(Student.class);
-                                if (student != null) {
-                                    studentsWithStatus.add(new ClassStudentAdapter.StudentWithStatus(student, status));
-                                }
+                            Student student = documentSnapshot.toObject(Student.class);
+                            if (student != null) {
+                                studentsWithStatus.add(new ClassStudentAdapter.StudentWithStatus(student, status));
                             }
 
                             checkIfComplete(completedQueries[0], totalQueries, studentsWithStatus);
                         })
                         .addOnFailureListener(e -> {
+                            Log.e(TAG, "Error fetching student by ID: " + e.getMessage(), e);
                             completedQueries[0]++;
                             checkIfComplete(completedQueries[0], totalQueries, studentsWithStatus);
                         });
@@ -193,18 +212,65 @@ public class ClassDetailActivity extends AppCompatActivity {
                     if (classData != null) {
                         Map<String, String> students = classData.getEnrolledStudents();
                         students.remove(identifier);
+
+                        // Update enrolled counts
                         db.collection("Classes").document(classId)
                                 .update("enrolledStudents", students)
                                 .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "Student removed successfully", Toast.LENGTH_SHORT).show();
                                     loadClassDetails();
                                     removeFromStudentDocument(identifier);
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Error removing student from class: " + e.getMessage(), e);
+                                    Toast.makeText(this, "Error removing student: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 });
                     }
                 });
     }
 
+    private void removeFromStudentDocument(String identifier) {
+        // Determine if identifier is email or userId
+        if (identifier.contains("@")) {
+            // Look up by email
+            db.collection("Students")
+                    .whereEqualTo("email", identifier)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        if (!querySnapshot.isEmpty()) {
+                            String studentId = querySnapshot.getDocuments().get(0).getId();
+                            updateStudentEnrollment(studentId);
+                        }
+                    })
+                    .addOnFailureListener(e ->
+                            Log.e(TAG, "Error finding student by email: " + e.getMessage(), e));
+        } else {
+            // Look up by userId - direct document access
+            updateStudentEnrollment(identifier);
+        }
+    }
 
+    private void updateStudentEnrollment(String studentId) {
+        db.collection("Students").document(studentId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Student student = documentSnapshot.toObject(Student.class);
+                    if (student != null) {
+                        Map<String, String> enrolledClasses = student.getEnrolledClasses() != null ?
+                                new HashMap<>(student.getEnrolledClasses()) : new HashMap<>();
 
+                        // Remove the class from student's enrollment
+                        enrolledClasses.remove(classId);
+
+                        // Update Firestore document
+                        db.collection("Students").document(studentId)
+                                .update("enrolledClasses", enrolledClasses)
+                                .addOnFailureListener(e ->
+                                        Log.e(TAG, "Error updating student enrollment", e));
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Log.e(TAG, "Error getting student document", e));
+    }
 
     private void showNoStudentsView() {
         tvNoStudents.setVisibility(View.VISIBLE);

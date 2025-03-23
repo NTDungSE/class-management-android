@@ -22,13 +22,12 @@
         </activity>
         <activity android:name=".view.activities.auth.LoginActivity" />
         <activity android:name=".view.activities.auth.RegisterActivity" />
-        <activity android:name=".view.activities.teacher.students.StudentFormActivity" />
-        <activity android:name=".view.activities.teacher.students.StudentListActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassFormActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassListActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassDetailActivity" />
         <activity android:name=".view.activities.teacher.TeacherDashboardActivity" />
         <activity android:name=".view.activities.student.StudentDashboardActivity" />
+        <activity android:name=".view.activities.teacher.classes.ClassInviteActivity" />
 
 
     </application>

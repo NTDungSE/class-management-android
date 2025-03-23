@@ -4,6 +4,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -13,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +24,7 @@ import vn.edu.fpt.studentmanagementapp.model.Class;
 import vn.edu.fpt.studentmanagementapp.model.Student;
 
 public class ClassInviteActivity extends AppCompatActivity {
+    private static final String TAG = "ClassInviteActivity";
     private FirebaseFirestore db;
     private String classId;
     private String classCode;
@@ -123,20 +126,29 @@ public class ClassInviteActivity extends AppCompatActivity {
                                 new HashMap<>(classData.getEnrolledStudents()) : new HashMap<>();
                     }
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error loading class data: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error loading class data: " + e.getMessage(), e);
+                    Toast.makeText(this, "Error loading class data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void sendInvitation(String email) {
+        // First, update the class document
         enrolledStudents.put(email, "invited");
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("enrolledStudents", enrolledStudents);
+
         db.collection("Classes").document(classId)
-                .update("enrolledStudents", enrolledStudents)
+                .update(updates)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Invitation sent to " + email, Toast.LENGTH_SHORT).show();
                     createOrUpdateStudentRecord(email);
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error sending invitation: " + e.getMessage(), e);
+                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void createOrUpdateStudentRecord(String email) {
@@ -145,16 +157,25 @@ public class ClassInviteActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (querySnapshot.isEmpty()) {
+                        // Create new student record
                         Student newStudent = new Student("Invited Student", email);
                         Map<String, String> classes = new HashMap<>();
                         classes.put(classId, "invited");
                         newStudent.setEnrolledClasses(classes);
-                        db.collection("Students").add(newStudent);
+
+                        db.collection("Students").add(newStudent)
+                                .addOnSuccessListener(documentReference ->
+                                        Log.d(TAG, "Student document created for invited user"))
+                                .addOnFailureListener(e ->
+                                        Log.e(TAG, "Error creating student document: " + e.getMessage(), e));
                     } else {
+                        // Update existing student
                         String studentId = querySnapshot.getDocuments().get(0).getId();
                         updateStudentClassEnrollment(studentId);
                     }
-                });
+                })
+                .addOnFailureListener(e ->
+                        Log.e(TAG, "Error checking for existing student: " + e.getMessage(), e));
     }
 
     private void updateStudentClassEnrollment(String studentId) {
@@ -165,9 +186,16 @@ public class ClassInviteActivity extends AppCompatActivity {
                         Map<String, String> classes = student.getEnrolledClasses() != null ?
                                 new HashMap<>(student.getEnrolledClasses()) : new HashMap<>();
                         classes.put(classId, "invited");
+
                         db.collection("Students").document(studentId)
-                                .update("enrolledClasses", classes);
+                                .update("enrolledClasses", classes)
+                                .addOnSuccessListener(aVoid ->
+                                        Log.d(TAG, "Student class enrollment updated"))
+                                .addOnFailureListener(e ->
+                                        Log.e(TAG, "Error updating student: " + e.getMessage(), e));
                     }
-                });
+                })
+                .addOnFailureListener(e ->
+                        Log.e(TAG, "Error getting student document: " + e.getMessage(), e));
     }
 }
