@@ -24,6 +24,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -32,8 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import vn.edu.fpt.studentmanagementapp.R;
-import vn.edu.fpt.studentmanagementapp.view.activities.student.StudentDashboardActivity;
-import vn.edu.fpt.studentmanagementapp.view.activities.teacher.TeacherDashboardActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.DashboardActivity;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText etEmail, etPassword;
@@ -66,23 +67,29 @@ public class LoginActivity extends AppCompatActivity {
             String password = etPassword.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Please enter both email and password", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Show loading
-            Toast.makeText(this, "Đang đăng nhập...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Logging in...", Toast.LENGTH_SHORT).show();
 
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            Toast.makeText(this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
                             checkUserRoleAndRedirect();
                         } else {
-                            String errorMessage = task.getException() != null ?
-                                    task.getException().getMessage() :
-                                    "Đăng nhập thất bại";
-                            Toast.makeText(this, "Lỗi: " + errorMessage, Toast.LENGTH_SHORT).show();
+                            String errorMessage = "Login failed";
+                            if (task.getException() != null) {
+                                if (task.getException() instanceof FirebaseAuthInvalidUserException) {
+                                    errorMessage = "No account found with this email";
+                                } else if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
+                                    errorMessage = "Invalid password";
+                                } else {
+                                    errorMessage = task.getException().getMessage();
+                                }
+                            }
+                            Toast.makeText(this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
                         }
                     });
         });
@@ -143,7 +150,9 @@ public class LoginActivity extends AppCompatActivity {
                         // Sign in failed
                         Log.w(TAG, "signInWithCredential:failure", task.getException());
                         Toast.makeText(LoginActivity.this, "Authentication failed: " +
-                                task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                        (task.getException() != null ?
+                                                task.getException().getMessage() : "Unknown error"),
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -190,10 +199,10 @@ public class LoginActivity extends AppCompatActivity {
                 .update("role", role)
                 .addOnSuccessListener(aVoid -> {
                     if ("teacher".equals(role)) {
-                        startActivity(new Intent(LoginActivity.this, TeacherDashboardActivity.class));
+                        startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
                     } else {
                         // If student role, prompt for additional info
-                        startActivity(new Intent(LoginActivity.this, StudentDashboardActivity.class));
+                        startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -209,10 +218,10 @@ public class LoginActivity extends AppCompatActivity {
                     if (documentSnapshot.exists()) {
                         String role = documentSnapshot.getString("role");
                         if ("teacher".equals(role)) {
-                            startActivity(new Intent(LoginActivity.this, TeacherDashboardActivity.class));
+                            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
                             finish();
                         } else {
-                            startActivity(new Intent(LoginActivity.this, StudentDashboardActivity.class));
+                            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
                             finish();
                         }
                     } else {
@@ -225,7 +234,7 @@ public class LoginActivity extends AppCompatActivity {
                                 .set(user)
                                 .addOnSuccessListener(aVoid -> {
                                     Toast.makeText(LoginActivity.this, "Created new user profile", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(LoginActivity.this, StudentDashboardActivity.class));
+                                    startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
                                     finish();
                                 })
                                 .addOnFailureListener(e -> {

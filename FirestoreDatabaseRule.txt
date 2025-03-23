@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /Users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    match /Students/{studentId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                    get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "teacher";
+      allow create, update: if request.auth != null && 
+                             request.auth.uid == studentId && 
+                             request.resource.data.userId == request.auth.uid;
+    }
+    
+    match /Classes/{classId} {
+      // Allow all authenticated users to query classes by class code
+      allow list: if request.auth != null;
+      
+      // But restrict document reads to appropriate users
+      allow get: if request.auth != null && 
+                 (resource.data.teacherId == request.auth.uid || 
+                  request.auth.uid in resource.data.enrolledStudents ||
+                  resource.data.enrolledStudents[request.auth.uid] != null ||
+                  resource.data.enrolledStudents[request.auth.email] != null);
+      
+      // Allow teachers to create and update their own classes
+      allow create, update: if request.auth != null && 
+                             get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "teacher" && 
+                             request.resource.data.teacherId == request.auth.uid;
+      
+      // Allow students to update classes they're joining
+      allow update: if request.auth != null && 
+                     get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "student" && 
+                     exists(/databases/$(database)/documents/Classes/$(classId)) &&
+                     (
+                       // Allow student to add themselves to enrolledStudents
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['enrolledStudents']) && 
+                       request.resource.data.enrolledStudents[request.auth.uid] == 'enrolled'
+                     );
+      
+      // Allow teachers to delete their own classes
+      allow delete: if request.auth != null && 
+                      get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "teacher" && 
+                      resource.data.teacherId == request.auth.uid;
+    }
+match /Assignments/{assignmentId} {
+      // Allow teachers to create, read, update, and delete assignments for their classes
+      allow create, update, delete: if request.auth != null && 
+                                      get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "teacher" &&
+                                      get(/databases/$(database)/documents/Classes/$(request.resource.data.classId)).data.teacherId == request.auth.uid;
+      
+      // Allow teachers to read assignments for their classes
+      allow read: if request.auth != null && 
+                   get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "teacher" &&
+                   get(/databases/$(database)/documents/Classes/$(resource.data.classId)).data.teacherId == request.auth.uid;
+      
+      // Allow students to read published assignments for classes they're enrolled in
+      allow read: if request.auth != null && 
+                   get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "student" &&
+                   resource.data.isPublished == true &&
+                   get(/databases/$(database)/documents/Classes/$(resource.data.classId)).data.enrolledStudents[request.auth.uid] == "enrolled";
+    }
+    
+    match /Submissions/{submissionId} {
+      // Allow students to create and update their own submissions
+      allow create, update: if request.auth != null && 
+                             request.auth.uid == request.resource.data.studentId &&
+                             get(/databases/$(database)/documents/Classes/$(request.resource.data.classId)).data.enrolledStudents[request.auth.uid] == "enrolled";
+      
+      // Allow students to read their own submissions
+      allow read: if request.auth != null && 
+                   request.auth.uid == resource.data.studentId;
+      
+      // Allow teachers to read and update submissions for assignments in their classes
+      allow read, update: if request.auth != null && 
+                           get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "teacher" &&
+                           get(/databases/$(database)/documents/Classes/$(resource.data.classId)).data.teacherId == request.auth.uid;
+    }
+  }
+}

@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -57,8 +58,8 @@ public class RegisterActivity extends AppCompatActivity {
             int selectedRoleId = rgRole.getCheckedRadioButtonId();
             String role = selectedRoleId == R.id.rb_teacher ? "teacher" : "student";
 
-            if (role.equals("student") && name.isEmpty() ) {
-                Toast.makeText(this, "Please fill in all student fields", Toast.LENGTH_SHORT).show();
+            if (role.equals("student") && name.isEmpty()) {
+                Toast.makeText(this, "Please fill in all required fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -85,20 +86,26 @@ public class RegisterActivity extends AppCompatActivity {
                                 db.collection("Students").document(userId) // Use userId as document ID
                                         .set(student)
                                         .addOnSuccessListener(aVoid -> {
-                                            Toast.makeText(this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show();
                                             startActivity(new Intent(this, LoginActivity.class));
                                             finish();
                                         })
                                         .addOnFailureListener(e -> {
-                                            Toast.makeText(this, "Lỗi lưu thông tin: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(this, "Error saving student data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                         });
                             } else {
-                                Toast.makeText(this, "Đăng ký thành công", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(this, LoginActivity.class));
                                 finish();
                             }
                         } else {
-                            Toast.makeText(this, "Đăng ký thất bại", Toast.LENGTH_SHORT).show();
+                            String error = "Registration failed";
+                            if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                                error = "Email already registered";
+                            } else if (task.getException() != null) {
+                                error = task.getException().getMessage();
+                            }
+                            Toast.makeText(this, "Error: " + error, Toast.LENGTH_LONG).show();
                         }
                     });
         });

@@ -25,9 +25,12 @@
         <activity android:name=".view.activities.teacher.classes.ClassFormActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassListActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassDetailActivity" />
-        <activity android:name=".view.activities.teacher.TeacherDashboardActivity" />
-        <activity android:name=".view.activities.student.StudentDashboardActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassInviteActivity" />
+        <activity android:name=".view.activities.student.JoinClassActivity" />
+        <activity android:name=".view.activities.DashboardActivity" />
+        <activity android:name=".view.activities.student.StudentClassListActivity" />
+        <activity android:name=".view.activities.student.StudentClassDetailActivity" />
+
 
 
     </application>
