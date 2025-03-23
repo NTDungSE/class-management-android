@@ -26,6 +26,9 @@ import vn.edu.fpt.studentmanagementapp.model.Student;
 import vn.edu.fpt.studentmanagementapp.view.activities.auth.LoginActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.student.JoinClassActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.student.StudentClassListActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.student.assignments.AssignmentDetailActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.teacher.assignments.CreateAssignmentActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.teacher.assignments.SubmissionListActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes.ClassListActivity;
 
 public class DashboardActivity extends AppCompatActivity {
@@ -123,7 +126,8 @@ public class DashboardActivity extends AppCompatActivity {
 
         btnMyAssignments.setOnClickListener(v -> {
             // TODO: Implement navigation to assignments view
-            Toast.makeText(this, "Assignments view coming soon", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(this, "Assignments view coming soon", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(DashboardActivity.this, AssignmentDetailActivity.class));
         });
 
         btnMyGrades.setOnClickListener(v -> {
@@ -152,11 +156,13 @@ public class DashboardActivity extends AppCompatActivity {
         });
 
         btnManageAssignments.setOnClickListener(v -> {
-            Toast.makeText(this, "Assignment management coming soon", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Assignment management coming soon", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(DashboardActivity.this, CreateAssignmentActivity.class));
         });
 
         btnReviewSubmissions.setOnClickListener(v -> {
-            Toast.makeText(this, "Submission review coming soon", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Submission review coming soon", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(DashboardActivity.this, SubmissionListActivity.class));
         });
     }
 

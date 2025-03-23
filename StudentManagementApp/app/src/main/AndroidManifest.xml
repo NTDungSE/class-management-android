@@ -30,6 +30,9 @@
         <activity android:name=".view.activities.DashboardActivity" />
         <activity android:name=".view.activities.student.StudentClassListActivity" />
         <activity android:name=".view.activities.student.StudentClassDetailActivity" />
+        <activity android:name=".view.activities.student.assignments.AssignmentDetailActivity" />
+        <activity android:name=".view.activities.teacher.assignments.CreateAssignmentActivity" />
+        <activity android:name=".view.activities.teacher.assignments.SubmissionListActivity" />
 
 
 
