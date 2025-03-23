@@ -47,6 +47,20 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginBottom="16dp"/>
 
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_logout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/logout"
+            app:cornerRadius="8dp"
+            android:backgroundTint="@color/grey_500"
+            android:textColor="@color/white"
+            android:textAllCaps="false"
+            android:padding="12dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -60,5 +74,6 @@
         app:backgroundTint="@color/purple_500"
         app:iconTint="@color/white"
         app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"/>
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

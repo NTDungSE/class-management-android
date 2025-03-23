@@ -13,21 +13,21 @@
         android:theme="@style/Theme.StudentManagementApp"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".view.activities.HomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".MainActivity" />
         <activity android:name=".view.activities.auth.LoginActivity" />
         <activity android:name=".view.activities.auth.RegisterActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassFormActivity" />
-        <activity android:name=".view.activities.teacher.classes.ClassListActivity" />
+        <activity android:name=".view.activities.ClassListActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassDetailActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassInviteActivity" />
         <activity android:name=".view.activities.student.JoinClassActivity" />
-        <activity android:name=".view.activities.DashboardActivity" />
         <activity android:name=".view.activities.student.StudentClassListActivity" />
         <activity android:name=".view.activities.student.StudentClassDetailActivity" />
         <activity android:name=".view.activities.student.assignments.AssignmentDetailActivity" />

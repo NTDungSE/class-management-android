@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import vn.edu.fpt.studentmanagementapp.R;
-import vn.edu.fpt.studentmanagementapp.view.activities.DashboardActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.HomeActivity;
 
 public class LoginActivity extends AppCompatActivity {
     private EditText etEmail, etPassword;
@@ -199,10 +199,10 @@ public class LoginActivity extends AppCompatActivity {
                 .update("role", role)
                 .addOnSuccessListener(aVoid -> {
                     if ("teacher".equals(role)) {
-                        startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                     } else {
                         // If student role, prompt for additional info
-                        startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -218,10 +218,10 @@ public class LoginActivity extends AppCompatActivity {
                     if (documentSnapshot.exists()) {
                         String role = documentSnapshot.getString("role");
                         if ("teacher".equals(role)) {
-                            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                             finish();
                         } else {
-                            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                             finish();
                         }
                     } else {
@@ -234,7 +234,7 @@ public class LoginActivity extends AppCompatActivity {
                                 .set(user)
                                 .addOnSuccessListener(aVoid -> {
                                     Toast.makeText(LoginActivity.this, "Created new user profile", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+                                    startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                                     finish();
                                 })
                                 .addOnFailureListener(e -> {

@@ -3,6 +3,7 @@ package vn.edu.fpt.studentmanagementapp.view.activities.student;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +21,7 @@ import java.util.List;
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Class;
 import vn.edu.fpt.studentmanagementapp.model.Student;
+import vn.edu.fpt.studentmanagementapp.view.activities.auth.LoginActivity;
 import vn.edu.fpt.studentmanagementapp.view.adapters.StudentClassAdapter;
 
 public class StudentClassListActivity extends AppCompatActivity implements StudentClassAdapter.ClassActionListener {
@@ -57,6 +59,12 @@ public class StudentClassListActivity extends AppCompatActivity implements Stude
 
         // Load student's enrolled classes
         loadEnrolledClasses(studentId);
+        Button btnLogout = findViewById(R.id.btn_logout);
+        btnLogout.setOnClickListener(v -> {
+            mAuth.signOut();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        });
     }
 
     private void loadEnrolledClasses(String studentId) {
