@@ -19,6 +19,7 @@ import vn.edu.fpt.studentmanagementapp.model.Student;
 
 public class ClassStudentAdapter extends RecyclerView.Adapter<ClassStudentAdapter.StudentViewHolder> {
     private List<StudentWithStatus> students = new ArrayList<>();
+    private boolean isTeacher = false;
 
     public static class StudentWithStatus {
         public Student student;
@@ -38,6 +39,9 @@ public class ClassStudentAdapter extends RecyclerView.Adapter<ClassStudentAdapte
         this.removalListener = listener;
     }
 
+    public void setTeacherRole(boolean isTeacher) {
+        this.isTeacher = isTeacher;
+    }
 
     public void setStudents(List<Student> students) {
         this.students.clear();
@@ -67,8 +71,10 @@ public class ClassStudentAdapter extends RecyclerView.Adapter<ClassStudentAdapte
 
         holder.tvName.setText(student.getName());
         holder.tvEmail.setText(student.getEmail());
+        holder.tvStatus.setText(capitalizeFirstLetter(status));
 
-        if (student.isRegistered()) {
+
+        if (student.isRegistered() && isTeacher) {
             holder.btnRemove.setVisibility(View.VISIBLE);
             holder.btnRemove.setOnClickListener(v -> {
                 if (removalListener != null) {

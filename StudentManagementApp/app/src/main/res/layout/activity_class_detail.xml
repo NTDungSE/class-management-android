@@ -14,7 +14,6 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/purple_500"
-            app:title="@string/class_details"
             app:titleTextColor="@color/white"
             app:navigationIcon="@android:drawable/ic_menu_revert"/>
 
@@ -26,7 +25,7 @@
         android:padding="16dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_class_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -52,6 +51,14 @@
                     android:textColor="@color/black"/>
 
                 <TextView
+                    android:id="@+id/tv_class_code"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone"/>
+
+                <TextView
                     android:id="@+id/tv_student_count"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -59,7 +66,7 @@
                     android:textColor="@color/grey_500"
                     android:layout_marginTop="8dp"/>
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/tv_students_list_title"
@@ -70,7 +77,8 @@
             android:textStyle="bold"
             android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@id/card_class_info"
-            app:layout_constraintStart_toStartOf="parent"/>
+            app:layout_constraintStart_toStartOf="parent"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/tv_no_students"
@@ -80,7 +88,6 @@
             android:textSize="16sp"
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/tv_students_list_title"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -92,7 +99,9 @@
             app:layout_constraintTop_toBottomOf="@id/tv_students_list_title"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone"/>
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_invite"
             android:layout_width="wrap_content"
@@ -101,7 +110,21 @@
             android:contentDescription="Invite students"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_margin="16dp"/>
+            android:layout_margin="16dp"
+            android:visibility="gone"/>
 
+        <ImageButton
+            android:id="@+id/btn_assignments"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_assignment"
+            android:contentDescription="View assignments"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/purple_500"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

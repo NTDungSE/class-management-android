@@ -15,7 +15,7 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Class;
-import vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes.ClassDetailActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.ClassDetailActivity;
 
 public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.ClassViewHolder> {
     private final ClassActionListener listener;
@@ -30,56 +30,66 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
     public ClassAdapter(@NonNull FirestoreRecyclerOptions<Class> options, ClassActionListener listener) {
         super(options);
         this.listener = listener;
-        setHasStableIds(true);
+        // Enable stable IDs to help RecyclerView manage view recycling
+       setHasStableIds(true);
     }
 
     @Override
     public long getItemId(int position) {
-        // Safety check to prevent IndexOutOfBoundsException
-        if (position < 0 || position >= getSnapshots().size()) {
+        // Use the document ID as a unique and stable identifier
+        try {
+            return getSnapshots().getSnapshot(position).getId().hashCode();
+        } catch (IndexOutOfBoundsException e) {
+            // Fallback to a default no ID if position is invalid
             return RecyclerView.NO_ID;
         }
-        // This ensures stable IDs based on the document ID
-        return getSnapshots().getSnapshot(position).getId().hashCode();
     }
 
     @Override
     protected void onBindViewHolder(@NonNull ClassViewHolder holder, int position, @NonNull Class classData) {
-        holder.tvName.setText(classData.getName());
-        String classId = getSnapshots().getSnapshot(holder.getBindingAdapterPosition()).getId();
+        try {
+            // Safely get the class ID
+            String classId = getSnapshots().getSnapshot(position).getId();
 
-        // Show enrolled count if available
-        if (classData.getEnrolledStudents() != null) {
-            int count = classData.getEnrolledStudentCount() + classData.getInvitedStudentCount();
-            holder.tvStudentCount.setText(count + " Students");
-            holder.tvStudentCount.setVisibility(View.VISIBLE);
-        } else {
-            holder.tvStudentCount.setVisibility(View.GONE);
+            holder.tvName.setText(classData.getName());
+
+            // Show enrolled count if available
+            if (classData.getEnrolledStudents() != null) {
+                int count = classData.getEnrolledStudentCount() + classData.getInvitedStudentCount();
+                holder.tvStudentCount.setText(count + " Students");
+                holder.tvStudentCount.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvStudentCount.setVisibility(View.GONE);
+            }
+
+            // Make the whole item clickable to see class details
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), ClassDetailActivity.class);
+                intent.putExtra("CLASS_ID", classId);
+                intent.putExtra("CLASS_NAME", classData.getName());
+                intent.putExtra("IS_TEACHER", true);
+                v.getContext().startActivity(intent);
+            });
+
+            holder.btnAssignments.setOnClickListener(v -> {
+                if (listener != null) listener.onCreateAssignment(classId, classData);
+            });
+
+            holder.btnEdit.setOnClickListener(v -> {
+                if (listener != null) listener.onEditClass(classId, classData);
+            });
+
+            holder.btnManage.setOnClickListener(v -> {
+                if (listener != null) listener.onManageStudents(classId, classData);
+            });
+
+            holder.btnDelete.setOnClickListener(v -> {
+                if (listener != null) listener.onDeleteClass(classId);
+            });
+        } catch (IndexOutOfBoundsException e) {
+            // Log or handle the exception if needed
+            e.printStackTrace();
         }
-
-        // Make the whole item clickable to see class details
-        holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(v.getContext(), ClassDetailActivity.class);
-            intent.putExtra("CLASS_ID", classId);
-            intent.putExtra("CLASS_NAME", classData.getName());
-            v.getContext().startActivity(intent);
-        });
-
-        holder.btnAssignments.setOnClickListener(v -> {
-            if (listener != null) listener.onCreateAssignment(classId, classData);
-        });
-
-        holder.btnEdit.setOnClickListener(v -> {
-            if (listener != null) listener.onEditClass(classId, classData);
-        });
-
-        holder.btnManage.setOnClickListener(v -> {
-            if (listener != null) listener.onManageStudents(classId, classData);
-        });
-
-        holder.btnDelete.setOnClickListener(v -> {
-            if (listener != null) listener.onDeleteClass(classId);
-        });
     }
 
     @NonNull

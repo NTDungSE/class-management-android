@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,7 +27,6 @@ import vn.edu.fpt.studentmanagementapp.model.Class;
 import vn.edu.fpt.studentmanagementapp.model.Student;
 import vn.edu.fpt.studentmanagementapp.view.activities.auth.LoginActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.student.JoinClassActivity;
-import vn.edu.fpt.studentmanagementapp.view.activities.student.StudentClassDetailActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.teacher.assignments.CreateAssignmentActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes.ClassFormActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes.ClassInviteActivity;
@@ -81,13 +81,41 @@ public class ClassListActivity extends AppCompatActivity implements
         fabMain.setIconResource(android.R.drawable.ic_input_add);
         fabMain.setOnClickListener(v -> startActivity(new Intent(this, ClassFormActivity.class)));
 
-        // Teacher's adapter setup
         Query query = db.collection("Classes").whereEqualTo("teacherId", mAuth.getCurrentUser().getUid());
         FirestoreRecyclerOptions<Class> options = new FirestoreRecyclerOptions.Builder<Class>()
                 .setQuery(query, Class.class)
                 .build();
         ClassAdapter adapter = new ClassAdapter(options, this);
         rvClasses.setAdapter(adapter);
+
+        // Add AdapterDataObserver to handle empty state
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                checkEmptyView(adapter);
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                checkEmptyView(adapter);
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                checkEmptyView(adapter);
+            }
+
+            private void checkEmptyView(ClassAdapter adapter) {
+                if (adapter.getItemCount() == 0) {
+                    tvNoClasses.setVisibility(View.VISIBLE);
+                    rvClasses.setVisibility(View.GONE);
+                } else {
+                    tvNoClasses.setVisibility(View.GONE);
+                    rvClasses.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
         adapter.startListening();
     }
 
@@ -177,9 +205,10 @@ public class ClassListActivity extends AppCompatActivity implements
     // Implement interface methods for student
     @Override
     public void onViewClassDetails(String classId, Class classData) {
-        Intent intent = new Intent(this, StudentClassDetailActivity.class);
+        Intent intent = new Intent(this, ClassDetailActivity.class);
         intent.putExtra("CLASS_ID", classId);
         intent.putExtra("CLASS_NAME", classData.getName());
+        intent.putExtra("IS_TEACHER", "teacher".equals(userRole));
         startActivity(intent);
     }
 
@@ -187,7 +216,18 @@ public class ClassListActivity extends AppCompatActivity implements
     public void onCreateAssignment(String classId, Class classData) {
         Intent intent = new Intent(this, CreateAssignmentActivity.class);
         intent.putExtra("classId", classId);
-        startActivity(intent);
+        startActivityForResult(intent, 100);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 100 && resultCode == RESULT_OK) {
+            // Refresh class list when returning from assignment creation
+            if (rvClasses.getAdapter() != null) {
+                ((ClassAdapter) rvClasses.getAdapter()).notifyDataSetChanged();
+            }
+        }
     }
 
     @Override
@@ -198,6 +238,15 @@ public class ClassListActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if ("teacher".equals(userRole) && rvClasses.getAdapter() != null) {
+            // Reset RecyclerView to clear invalid positions
+            rvClasses.getRecycledViewPool().clear();
+            rvClasses.setAdapter(rvClasses.getAdapter()); // Reattach the adapter
+        }
+    }
     @Override
     protected void onStop() {
         super.onStop();

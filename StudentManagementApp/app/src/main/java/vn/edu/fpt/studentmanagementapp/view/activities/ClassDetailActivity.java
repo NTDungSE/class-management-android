@@ -1,9 +1,11 @@
-package vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes;
+package vn.edu.fpt.studentmanagementapp.view.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -23,17 +26,17 @@ import java.util.Map;
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Class;
 import vn.edu.fpt.studentmanagementapp.model.Student;
+import vn.edu.fpt.studentmanagementapp.view.activities.teacher.assignments.AssignmentListActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes.ClassInviteActivity;
 import vn.edu.fpt.studentmanagementapp.view.adapters.ClassStudentAdapter;
 
 public class ClassDetailActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private RecyclerView rvStudents;
-    private TextView tvNoStudents;
-    private TextView tvClassName;
-    private TextView tvStudentCount;
+    private TextView tvNoStudents, tvClassName, tvStudentCount, tvClassCode;
     private ClassStudentAdapter adapter;
     private String classId;
-    private String className;
+    private boolean isTeacher;
     private static final String TAG = "ClassDetailActivity";
 
     @Override
@@ -42,88 +45,115 @@ public class ClassDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_class_detail);
         db = FirebaseFirestore.getInstance();
 
+        // Get intent extras
+        classId = getIntent().getStringExtra("CLASS_ID");
+        isTeacher = getIntent().getBooleanExtra("IS_TEACHER", false);
+
         // Initialize views
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         rvStudents = findViewById(R.id.rv_students);
         tvNoStudents = findViewById(R.id.tv_no_students);
         tvClassName = findViewById(R.id.tv_class_name);
         tvStudentCount = findViewById(R.id.tv_student_count);
-
-        // Get class ID from intent
-        classId = getIntent().getStringExtra("CLASS_ID");
-        className = getIntent().getStringExtra("CLASS_NAME");
-
-        if (classId == null) {
-            Toast.makeText(this, "Error: Class ID not provided", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+        tvClassCode = findViewById(R.id.tv_class_code);
 
         // Setup toolbar
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Class Details");
+            getSupportActionBar().setTitle(isTeacher ? "Class Details" : "Class Information");
         }
         toolbar.setNavigationOnClickListener(v -> finish());
+
+        // Role-based UI setup
+        if (isTeacher) {
+            setupTeacherUI();
+        } else {
+            setupStudentUI();
+        }
+
+        loadClassDetails();
+    }
+
+    private void setupTeacherUI() {
+        // Show teacher elements
+        findViewById(R.id.tv_students_list_title).setVisibility(View.VISIBLE);
+        rvStudents.setVisibility(View.VISIBLE);
+        findViewById(R.id.fab_invite).setVisibility(View.VISIBLE);
 
         // Setup RecyclerView
         rvStudents.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ClassStudentAdapter();
         rvStudents.setAdapter(adapter);
 
-        // Set class name
-        tvClassName.setText(className);
-
-        // Load class and its students
-        loadClassDetails();
-
+        // Setup FAB
         FloatingActionButton fabInvite = findViewById(R.id.fab_invite);
+        fabInvite.bringToFront();
         fabInvite.setOnClickListener(v -> {
-            Intent intent = new Intent(ClassDetailActivity.this, ClassInviteActivity.class);
+            Intent intent = new Intent(this, ClassInviteActivity.class);
             intent.putExtra("CLASS_ID", classId);
-            intent.putExtra("CLASS_NAME", className);
             startActivity(intent);
         });
+
+        ImageButton btnAssignments = findViewById(R.id.btn_assignments);
+        btnAssignments.setVisibility(View.VISIBLE);
+        if (btnAssignments != null) {
+            btnAssignments.setVisibility(View.VISIBLE);
+            btnAssignments.setOnClickListener(v -> {
+                Intent intent = new Intent(this, AssignmentListActivity.class);
+                intent.putExtra("CLASS_ID", classId);
+                startActivity(intent);
+            });
+        }
+        adapter.setTeacherRole(true);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Refresh data when returning from other activities
-        loadClassDetails();
+    private void setupStudentUI() {
+        // Show student elements
+        tvClassCode.setVisibility(View.VISIBLE);
+        MaterialCardView card = findViewById(R.id.card_class_info);
+        card.setCardElevation(8f);
     }
 
     private void loadClassDetails() {
         db.collection("Classes").document(classId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     Class classData = documentSnapshot.toObject(Class.class);
-                    if (classData == null || classData.getEnrolledStudents() == null ||
-                            classData.getEnrolledStudents().isEmpty()) {
-                        showNoStudentsView();
-                        return;
+                    if (classData != null) {
+                        updateCommonUI(classData);
+                        if (isTeacher) {
+                            updateTeacherUI(classData);
+                        }
                     }
-
-                    // Update student count with enrolled and invited counts
-                    int enrolledCount = classData.getEnrolledStudentCount();
-                    int invitedCount = classData.getInvitedStudentCount();
-                    int totalCount = enrolledCount + invitedCount;
-
-                    String countText = getString(R.string.student_count_detail,
-                            totalCount, enrolledCount, invitedCount);
-                    tvStudentCount.setText(countText);
-
-                    // Fetch all students in this class
-                    fetchStudentsInClass(classData.getEnrolledStudents());
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error loading class: " + e.getMessage(), e);
                     Toast.makeText(this, "Error loading class: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    showNoStudentsView();
+                    finish();
                 });
     }
 
-    private void fetchStudentsInClass(Map<String, String> enrolledStudents) {
+    private void updateCommonUI(Class classData) {
+        tvClassName.setText(classData.getName());
+        if (!isTeacher) {
+            tvClassCode.setText("Class Code: " + classData.getClassCode());
+            tvStudentCount.setText("Students: " + classData.getEnrolledStudentCount());
+        }
+    }
+
+    private void updateTeacherUI(Class classData) {
+        int enrolledCount = classData.getEnrolledStudentCount();
+        int invitedCount = classData.getInvitedStudentCount();
+        tvStudentCount.setText(String.format("Students: %d (Enrolled: %d, Invited: %d)",
+                enrolledCount + invitedCount, enrolledCount, invitedCount));
+
+        if (classData.getEnrolledStudents() != null && !classData.getEnrolledStudents().isEmpty()) {
+            fetchStudents(classData.getEnrolledStudents());
+        } else {
+            showNoStudentsView();
+        }
+    }
+
+    private void fetchStudents(Map<String, String> enrolledStudents) {
         if (enrolledStudents.isEmpty()) {
             showNoStudentsView();
             return;
@@ -229,6 +259,12 @@ public class ClassDetailActivity extends AppCompatActivity {
                 });
     }
 
+    public void viewAssignments(View view) {
+        Intent intent = new Intent(this, AssignmentListActivity.class);
+        intent.putExtra("CLASS_ID", classId);
+        startActivity(intent);
+    }
+
     private void removeFromStudentDocument(String identifier) {
         // Determine if identifier is email or userId
         if (identifier.contains("@")) {
@@ -276,5 +312,10 @@ public class ClassDetailActivity extends AppCompatActivity {
         tvNoStudents.setVisibility(View.VISIBLE);
         rvStudents.setVisibility(View.GONE);
         tvStudentCount.setText(getString(R.string.student_count, 0));
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isTeacher) loadClassDetails();
     }
 }

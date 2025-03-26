@@ -10,7 +10,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import vn.edu.fpt.studentmanagementapp.view.activities.auth.LoginActivity;
-import vn.edu.fpt.studentmanagementapp.view.activities.student.StudentClassListActivity;
 
 public class HomeActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
