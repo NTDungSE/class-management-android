@@ -24,6 +24,7 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
         void onEditClass(String classId, Class classData);
         void onManageStudents(String classId, Class classData);
         void onDeleteClass(String classId);
+        void onCreateAssignment(String classId, Class classData);
     }
 
     public ClassAdapter(@NonNull FirestoreRecyclerOptions<Class> options, ClassActionListener listener) {
@@ -64,6 +65,10 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
             v.getContext().startActivity(intent);
         });
 
+        holder.btnAssignments.setOnClickListener(v -> {
+            if (listener != null) listener.onCreateAssignment(classId, classData);
+        });
+
         holder.btnEdit.setOnClickListener(v -> {
             if (listener != null) listener.onEditClass(classId, classData);
         });
@@ -86,7 +91,7 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
 
     static class ClassViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvStudentCount;
-        ImageButton btnEdit, btnManage, btnDelete;
+        ImageButton btnEdit, btnManage, btnDelete, btnAssignments;
 
         public ClassViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -95,6 +100,7 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
             btnEdit = itemView.findViewById(R.id.btn_edit);
             btnManage = itemView.findViewById(R.id.btn_manage);
             btnDelete = itemView.findViewById(R.id.btn_delete);
+            btnAssignments = itemView.findViewById(R.id.btn_assignments);
         }
     }
 }

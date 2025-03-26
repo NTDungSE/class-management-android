@@ -52,6 +52,15 @@
             app:layout_constraintTop_toBottomOf="@id/class_header">
 
             <ImageButton
+                android:id="@+id/btn_assignments"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_assignment"
+                android:contentDescription="Create Assignment"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/grey_800" />
+
+            <ImageButton
                 android:id="@+id/btn_manage"
                 android:layout_width="48dp"
                 android:layout_height="48dp"

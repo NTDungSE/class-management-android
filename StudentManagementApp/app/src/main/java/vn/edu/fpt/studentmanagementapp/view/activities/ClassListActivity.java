@@ -2,7 +2,9 @@ package vn.edu.fpt.studentmanagementapp.view.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -11,14 +13,21 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Class;
+import vn.edu.fpt.studentmanagementapp.model.Student;
 import vn.edu.fpt.studentmanagementapp.view.activities.auth.LoginActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.student.JoinClassActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.student.StudentClassDetailActivity;
+import vn.edu.fpt.studentmanagementapp.view.activities.teacher.assignments.CreateAssignmentActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes.ClassFormActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes.ClassInviteActivity;
 import vn.edu.fpt.studentmanagementapp.view.adapters.ClassAdapter;
@@ -34,6 +43,7 @@ public class ClassListActivity extends AppCompatActivity implements
     private ExtendedFloatingActionButton fabMain;
     private String userRole;
 
+    private List<Class> enrolledClasses;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,8 +96,59 @@ public class ClassListActivity extends AppCompatActivity implements
         fabMain.setIconResource(android.R.drawable.ic_input_add);
         fabMain.setOnClickListener(v -> startActivity(new Intent(this, JoinClassActivity.class)));
 
-        // Student's adapter setup (similar to StudentClassListActivity's logic)
-        // Implement your student-specific data fetching here
+        // Initialize adapter with the instance variable enrolledClasses
+        enrolledClasses = new ArrayList<>(); // Initialize the instance variable
+        StudentClassAdapter adapter = new StudentClassAdapter(enrolledClasses, this);
+        rvClasses.setAdapter(adapter);
+
+        // Load student's enrolled classes
+        String studentId = mAuth.getCurrentUser().getUid();
+        db.collection("Students").document(studentId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Student student = documentSnapshot.toObject(Student.class);
+                    if (student != null && student.getEnrolledClasses() != null && !student.getEnrolledClasses().isEmpty()) {
+                        List<String> classIds = new ArrayList<>(student.getEnrolledClasses().keySet());
+
+                        // Fetch all classes where document ID is in classIds
+                        db.collection("Classes")
+                                .whereIn(FieldPath.documentId(), classIds)
+                                .get()
+                                .addOnSuccessListener(queryDocumentSnapshots -> {
+                                    enrolledClasses.clear();
+                                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                                        Class classData = doc.toObject(Class.class);
+                                        if (classData != null) {
+                                            classData.setClassId(doc.getId());
+                                            enrolledClasses.add(classData);
+                                        }
+                                    }
+                                    adapter.notifyDataSetChanged();
+                                    if (enrolledClasses.isEmpty()) {
+                                        showNoClassesMessage();
+                                    } else {
+                                        tvNoClasses.setVisibility(View.GONE);
+                                        rvClasses.setVisibility(View.VISIBLE);
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    showNoClassesMessage();
+                                    Toast.makeText(this, "Error loading classes: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    } else {
+                        showNoClassesMessage();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    showNoClassesMessage();
+                    Toast.makeText(this, "Error loading classes: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void showNoClassesMessage() {
+        tvNoClasses.setVisibility(View.VISIBLE);
+        rvClasses.setVisibility(View.GONE);
+        tvNoClasses.setText("You are not enrolled in any classes");
     }
 
 
@@ -119,6 +180,13 @@ public class ClassListActivity extends AppCompatActivity implements
         Intent intent = new Intent(this, StudentClassDetailActivity.class);
         intent.putExtra("CLASS_ID", classId);
         intent.putExtra("CLASS_NAME", classData.getName());
+        startActivity(intent);
+    }
+
+    @Override
+    public void onCreateAssignment(String classId, Class classData) {
+        Intent intent = new Intent(this, CreateAssignmentActivity.class);
+        intent.putExtra("classId", classId);
         startActivity(intent);
     }
 

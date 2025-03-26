@@ -20,7 +20,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity" />
         <activity android:name=".view.activities.auth.LoginActivity" />
         <activity android:name=".view.activities.auth.RegisterActivity" />
         <activity android:name=".view.activities.teacher.classes.ClassFormActivity" />
@@ -33,8 +32,6 @@
         <activity android:name=".view.activities.student.assignments.AssignmentDetailActivity" />
         <activity android:name=".view.activities.teacher.assignments.CreateAssignmentActivity" />
         <activity android:name=".view.activities.teacher.assignments.SubmissionListActivity" />
-
-
 
     </application>
 </manifest>
