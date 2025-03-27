@@ -190,10 +190,10 @@ public class SubmissionListActivity extends AppCompatActivity implements Submiss
                         submissions.add(submission);
                     }
                     
-                    // Update UI
-                    updateSubmissionStats();
-                    adapter.notifyDataSetChanged();
+                    // Always sync submission status when loading submissions
+                    syncAssignmentSubmissionStatus();
                     
+                    // Update UI after syncing
                     if (submissions.isEmpty()) {
                         recyclerView.setVisibility(View.GONE);
                         emptyView.setVisibility(View.VISIBLE);
@@ -222,7 +222,46 @@ public class SubmissionListActivity extends AppCompatActivity implements Submiss
         String stats = "Submitted: " + submitted + "/" + totalStudents + " • Graded: " + graded + "/" + submitted;
         tvSubmissionStats.setText(stats);
     }
-    
+
+    private void syncAssignmentSubmissionStatus() {
+        if (assignment == null) return;
+
+        Map<String, String> statusMap = new HashMap<>();
+
+        // Initialize all enrolled students as "not_submitted"
+        db.collection("Classes").document(classId)
+                .get()
+                .addOnSuccessListener(classDoc -> {
+                    Map<String, String> enrolledStudents = (Map<String, String>) classDoc.get("enrolledStudents");
+                    if (enrolledStudents != null) {
+                        for (String studentId : enrolledStudents.keySet()) {
+                            if (!studentId.contains("@")) { // Skip email-based entries
+                                statusMap.put(studentId, "not_submitted");
+                            }
+                        }
+                    }
+
+                    // Update status based on actual submissions
+                    for (Submission submission : submissions) {
+                        String status = submission.isGraded() ? "graded" : "submitted";
+                        statusMap.put(submission.getStudentId(), status);
+                    }
+
+                    // Update the Assignment's submissionStatus
+                    assignment.setSubmissionStatus(statusMap);
+
+                    // Save to Firestore
+                    db.collection("Assignments").document(assignmentId)
+                            .update("submissionStatus", statusMap)
+                            .addOnSuccessListener(aVoid -> {
+                                // Update UI counts
+                                updateSubmissionStats();
+                                adapter.notifyDataSetChanged();
+                            })
+                            .addOnFailureListener(e -> Toast.makeText(this, "Sync failed", Toast.LENGTH_SHORT).show());
+                });
+    }
+
     @Override
     public void onSubmissionClick(Submission submission) {
 //        Intent intent = new Intent(this, GradeSubmissionActivity.class);

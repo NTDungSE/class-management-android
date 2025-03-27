@@ -4,23 +4,21 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-
+import com.google.firebase.firestore.DocumentSnapshot;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Assignment;
+import vn.edu.fpt.studentmanagementapp.model.Submission;
 import vn.edu.fpt.studentmanagementapp.view.activities.student.assignments.AssignmentDetailActivity;
 import vn.edu.fpt.studentmanagementapp.view.adapters.AssignmentAdapter;
 
@@ -31,10 +29,10 @@ public class AssignmentListActivity extends AppCompatActivity {
     private String classId;
     private boolean isTeacher;
     private FloatingActionButton fabCreateAssignment;
-    private AssignmentAdapter adapter; // Single adapter instance
+    private AssignmentAdapter adapter;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_assignment_list);
 
@@ -46,7 +44,7 @@ public class AssignmentListActivity extends AppCompatActivity {
         emptyView = findViewById(R.id.empty_view);
         fabCreateAssignment = findViewById(R.id.fab_create_assignment);
 
-        setupRecyclerView(); // Initialize adapter once
+        setupRecyclerView();
 
         if (isTeacher) {
             fabCreateAssignment.setVisibility(View.VISIBLE);
@@ -63,7 +61,6 @@ public class AssignmentListActivity extends AppCompatActivity {
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
-        // Initialize adapter with empty list
         adapter = new AssignmentAdapter(new ArrayList<>(), isTeacher, assignment -> {
             if (isTeacher) {
                 Intent intent = new Intent(this, SubmissionListActivity.class);
@@ -94,36 +91,46 @@ public class AssignmentListActivity extends AppCompatActivity {
             List<Assignment> assignments = new ArrayList<>();
             for (QueryDocumentSnapshot doc : value) {
                 Assignment assignment = doc.toObject(Assignment.class);
-                assignment.setAssignmentId(doc.getId()); // Ensure ID is set
+                assignment.setAssignmentId(doc.getId());
                 assignments.add(assignment);
+                
+                // For teachers, check and update submission statuses
+                if (isTeacher) {
+                    updateSubmissionStatus(assignment);
+                }
             }
-            if (isTeacher) {
-                loadSubmissionCounts(assignments);
-            } else {
-                updateUI(assignments);
-            }
+            updateUI(assignments);
         });
     }
 
-    private void loadSubmissionCounts(List<Assignment> assignments) {
-        for (Assignment assignment : assignments) {
-            db.collection("Submissions")
-                    .whereEqualTo("assignmentId", assignment.getAssignmentId())
-                    .get()
-                    .addOnSuccessListener(queryDocumentSnapshots -> {
-                        int submittedCount = queryDocumentSnapshots.size();
-                        int gradedCount = 0;
-
-                        for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                            if (doc.getBoolean("isGraded")) gradedCount++;
+    // Add this new method to update submission status for each assignment
+    private void updateSubmissionStatus(Assignment assignment) {
+        db.collection("Submissions")
+            .whereEqualTo("assignmentId", assignment.getAssignmentId())
+            .whereEqualTo("classId", classId)
+            .get()
+            .addOnSuccessListener(queryDocuments -> {
+                if (!queryDocuments.isEmpty()) {
+                    Map<String, String> statusMap = assignment.getSubmissionStatus();
+                    if (statusMap == null) {
+                        statusMap = new HashMap<>();
+                    }
+                    
+                    for (DocumentSnapshot doc : queryDocuments.getDocuments()) {
+                        Submission submission = doc.toObject(Submission.class);
+                        if (submission != null) {
+                            String status = submission.isGraded() ? "graded" : "submitted";
+                            statusMap.put(submission.getStudentId(), status);
                         }
-
-                        assignment.setSubmittedCount(submittedCount);
-                        assignment.setGradedCount(gradedCount);
-                        adapter.notifyDataSetChanged();
-                    });
-        }
-        updateUI(assignments);
+                    }
+                    
+                    // Update the assignment in Firestore
+                    db.collection("Assignments")
+                        .document(assignment.getAssignmentId())
+                        .update("submissionStatus", statusMap)
+                        .addOnSuccessListener(aVoid -> adapter.notifyDataSetChanged());
+                }
+            });
     }
 
     private void updateUI(List<Assignment> assignments) {
@@ -133,7 +140,6 @@ public class AssignmentListActivity extends AppCompatActivity {
         } else {
             recyclerView.setVisibility(View.VISIBLE);
             emptyView.setVisibility(View.GONE);
-            // Update the existing adapter's data
             adapter.setAssignments(assignments);
         }
     }

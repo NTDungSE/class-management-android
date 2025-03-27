@@ -27,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Assignment;
@@ -340,17 +342,40 @@ public class AssignmentDetailActivity extends AppCompatActivity {
         db.collection("Submissions").document(submissionId)
                 .set(newSubmission)
                 .addOnSuccessListener(aVoid -> {
-                    // Update assignment's submission status
-                    DocumentReference assignmentRef = db.collection("Assignments").document(assignmentId);
-                    assignmentRef.update("submissionStatus." + userId, "submitted");
+                    // Update assignment's submission status with a proper transaction
+                    final DocumentReference assignmentRef = db.collection("Assignments").document(assignmentId);
                     
-                    Toast.makeText(AssignmentDetailActivity.this, 
-                               "Assignment submitted successfully", 
-                               Toast.LENGTH_SHORT).show();
-                    
-                    // Refresh UI
-                    submission = newSubmission;
-                    displaySubmissionDetails();
+                    db.runTransaction(transaction -> {
+                        DocumentSnapshot snapshot = transaction.get(assignmentRef);
+                        Assignment currentAssignment = snapshot.toObject(Assignment.class);
+                        
+                        if (currentAssignment != null) {
+                            Map<String, String> statusMap = currentAssignment.getSubmissionStatus();
+                            if (statusMap == null) {
+                                statusMap = new HashMap<>();
+                            }
+                            
+                            // Update the status for this student
+                            statusMap.put(userId, "submitted");
+                            
+                            // Update the assignment
+                            transaction.update(assignmentRef, "submissionStatus", statusMap);
+                        }
+                        
+                        return null;
+                    }).addOnSuccessListener(result -> {
+                        Toast.makeText(AssignmentDetailActivity.this, 
+                            "Assignment submitted successfully", 
+                            Toast.LENGTH_SHORT).show();
+                        
+                        // Refresh UI
+                        submission = newSubmission;
+                        displaySubmissionDetails();
+                    }).addOnFailureListener(e -> {
+                        Toast.makeText(AssignmentDetailActivity.this, 
+                            "Error updating assignment status: " + e.getMessage(), 
+                            Toast.LENGTH_SHORT).show();
+                    });
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(AssignmentDetailActivity.this, 
