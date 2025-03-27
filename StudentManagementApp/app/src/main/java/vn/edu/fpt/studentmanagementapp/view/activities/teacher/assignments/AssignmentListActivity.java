@@ -30,6 +30,7 @@ public class AssignmentListActivity extends AppCompatActivity {
     private boolean isTeacher;
     private FloatingActionButton fabCreateAssignment;
     private AssignmentAdapter adapter;
+    private static final int ASSIGNMENT_DETAIL_REQUEST_CODE = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,10 +72,19 @@ public class AssignmentListActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, AssignmentDetailActivity.class);
                 intent.putExtra("classId", classId);
                 intent.putExtra("assignmentId", assignment.getAssignmentId());
-                startActivity(intent);
+                startActivityForResult(intent, ASSIGNMENT_DETAIL_REQUEST_CODE);
             }
         });
         recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ASSIGNMENT_DETAIL_REQUEST_CODE && resultCode == RESULT_OK) {
+            // Force refresh the assignment list
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void loadAssignments() {

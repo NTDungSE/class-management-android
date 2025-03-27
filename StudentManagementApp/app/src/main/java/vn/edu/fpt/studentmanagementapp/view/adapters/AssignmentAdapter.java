@@ -7,13 +7,15 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Assignment;
+import vn.edu.fpt.studentmanagementapp.model.Submission;
 
 public class AssignmentAdapter extends RecyclerView.Adapter<AssignmentAdapter.ViewHolder> {
 
@@ -59,35 +61,71 @@ public class AssignmentAdapter extends RecyclerView.Adapter<AssignmentAdapter.Vi
 
         if (isTeacher) {
             holder.tvStatus.setVisibility(View.VISIBLE);
-            Map<String, String> statusMap = assignment.getSubmissionStatus();
-            int submitted = 0;
-            int graded = 0;
-            if (statusMap != null) {
-                for (String status : statusMap.values()) {
-                    if ("submitted".equals(status) || "graded".equals(status)) {
-                        submitted++;
-                    }
-                    if ("graded".equals(status)) {
+            // For teachers, we'll load the submission counts separately
+            loadSubmissionCounts(holder, assignment);
+        } else {
+            // For students, check their own submission status
+            loadStudentSubmissionStatus(holder, assignment);
+        }
+    }
+
+    private void loadSubmissionCounts(ViewHolder holder, Assignment assignment) {
+        holder.tvStatus.setText("Loading...");
+        
+        FirebaseFirestore.getInstance()
+            .collection("Submissions")
+            .whereEqualTo("assignmentId", assignment.getAssignmentId())
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+                int submitted = querySnapshot.size();
+                int graded = 0;
+                
+                for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                    Submission submission = doc.toObject(Submission.class);
+                    if (submission != null && submission.isGraded()) {
                         graded++;
                     }
                 }
-            }
-            String stats = "Submitted: " + submitted + " • Graded: " + graded;
-            holder.tvStatus.setText(stats);
-        } else {
-            String userId = FirebaseAuth.getInstance().getUid();
-            Map<String, String> statusMap = assignment.getSubmissionStatus();
-            String status = "Not submitted";
-            if (statusMap != null && statusMap.containsKey(userId)) {
-                String userStatus = statusMap.get(userId);
-                if ("submitted".equals(userStatus)) {
-                    status = "Submitted";
-                } else if ("graded".equals(userStatus)) {
-                    status = "Graded";
+                
+                String stats = "Submitted: " + submitted + " • Graded: " + graded;
+                holder.tvStatus.setText(stats);
+            })
+            .addOnFailureListener(e -> {
+                holder.tvStatus.setText("Error loading submission status");
+            });
+    }
+
+    private void loadStudentSubmissionStatus(ViewHolder holder, Assignment assignment) {
+        String userId = FirebaseAuth.getInstance().getUid();
+        
+        holder.tvStatus.setText("Checking status...");
+        
+        FirebaseFirestore.getInstance()
+            .collection("Submissions")
+            .whereEqualTo("assignmentId", assignment.getAssignmentId())
+            .whereEqualTo("studentId", userId)
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+                String status = "Not submitted";
+                
+                if (!querySnapshot.isEmpty()) {
+                    DocumentSnapshot doc = querySnapshot.getDocuments().get(0);
+                    Submission submission = doc.toObject(Submission.class);
+                    
+                    if (submission != null) {
+                        if (submission.isGraded()) {
+                            status = "Graded";
+                        } else {
+                            status = "Submitted";
+                        }
+                    }
                 }
-            }
-            holder.tvStatus.setText(status);
-        }
+                
+                holder.tvStatus.setText(status);
+            })
+            .addOnFailureListener(e -> {
+                holder.tvStatus.setText("Error");
+            });
     }
 
     @Override

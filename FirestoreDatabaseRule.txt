@@ -89,6 +89,10 @@ service cloud.firestore {
                            get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "teacher" &&
                            get(/databases/$(database)/documents/Classes/$(resource.data.classId)).data.teacherId == request.auth.uid;
                    
+      // Allow listing submissions for assignments in classes the user is enrolled in
+      allow list: if request.auth != null &&
+                  (get(/databases/$(database)/documents/Classes/$(resource.data.classId)).data.teacherId == request.auth.uid ||
+                   get(/databases/$(database)/documents/Classes/$(resource.data.classId)).data.enrolledStudents[request.auth.uid] == "enrolled");
     }
   }
 }

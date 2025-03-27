@@ -342,40 +342,17 @@ public class AssignmentDetailActivity extends AppCompatActivity {
         db.collection("Submissions").document(submissionId)
                 .set(newSubmission)
                 .addOnSuccessListener(aVoid -> {
-                    // Update assignment's submission status with a proper transaction
-                    final DocumentReference assignmentRef = db.collection("Assignments").document(assignmentId);
+                    // No longer updating Assignment document directly
+                    Toast.makeText(AssignmentDetailActivity.this, 
+                        "Assignment submitted successfully", 
+                        Toast.LENGTH_SHORT).show();
                     
-                    db.runTransaction(transaction -> {
-                        DocumentSnapshot snapshot = transaction.get(assignmentRef);
-                        Assignment currentAssignment = snapshot.toObject(Assignment.class);
-                        
-                        if (currentAssignment != null) {
-                            Map<String, String> statusMap = currentAssignment.getSubmissionStatus();
-                            if (statusMap == null) {
-                                statusMap = new HashMap<>();
-                            }
-                            
-                            // Update the status for this student
-                            statusMap.put(userId, "submitted");
-                            
-                            // Update the assignment
-                            transaction.update(assignmentRef, "submissionStatus", statusMap);
-                        }
-                        
-                        return null;
-                    }).addOnSuccessListener(result -> {
-                        Toast.makeText(AssignmentDetailActivity.this, 
-                            "Assignment submitted successfully", 
-                            Toast.LENGTH_SHORT).show();
-                        
-                        // Refresh UI
-                        submission = newSubmission;
-                        displaySubmissionDetails();
-                    }).addOnFailureListener(e -> {
-                        Toast.makeText(AssignmentDetailActivity.this, 
-                            "Error updating assignment status: " + e.getMessage(), 
-                            Toast.LENGTH_SHORT).show();
-                    });
+                    // Refresh UI
+                    submission = newSubmission;
+                    displaySubmissionDetails();
+                    
+                    // Set result so the list activity knows to refresh
+                    setResult(RESULT_OK);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(AssignmentDetailActivity.this, 
