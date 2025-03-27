@@ -15,6 +15,11 @@ public class Assignment {
     private String fileUrl;         // Optional: URL to attached file
     private String fileType;        // Optional: Type of attached file
     private boolean isPublished;    // Whether assignment is visible to students
+
+    // Add these fields
+    private boolean overdue;
+    private int submittedCount;
+    private int gradedCount;
     
     // Maps student IDs to their submission status
     // Status can be: "not_submitted", "submitted", "graded"
@@ -70,7 +75,7 @@ public class Assignment {
     
     public boolean isPublished() { return isPublished; }
     public void setPublished(boolean published) { isPublished = published; }
-    
+
     public Map<String, String> getSubmissionStatus() { return submissionStatus; }
     public void setSubmissionStatus(Map<String, String> submissionStatus) { this.submissionStatus = submissionStatus; }
     
@@ -82,7 +87,7 @@ public class Assignment {
     public boolean isOverdue() {
         return dueDate != null && new Date().after(dueDate);
     }
-    
+    public void setOverdue(boolean overdue) { this.overdue = overdue; }
     public int getSubmittedCount() {
         int count = 0;
         for (String status : submissionStatus.values()) {
@@ -92,6 +97,7 @@ public class Assignment {
         }
         return count;
     }
+    public void setSubmittedCount(int submittedCount) { this.submittedCount = submittedCount; }
     
     public int getGradedCount() {
         int count = 0;
@@ -102,4 +108,5 @@ public class Assignment {
         }
         return count;
     }
+    public void setGradedCount(int gradedCount) { this.gradedCount = gradedCount; }
 }

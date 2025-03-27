@@ -17,7 +17,7 @@ import java.util.List;
 import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Student;
 
-public class ClassStudentAdapter extends RecyclerView.Adapter<ClassStudentAdapter.StudentViewHolder> {
+public class DetailClassStudentAdapter extends RecyclerView.Adapter<DetailClassStudentAdapter.StudentViewHolder> {
     private List<StudentWithStatus> students = new ArrayList<>();
     private boolean isTeacher = false;
 
@@ -59,7 +59,7 @@ public class ClassStudentAdapter extends RecyclerView.Adapter<ClassStudentAdapte
     @NonNull
     @Override
     public StudentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_class_student, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_detail_class_student, parent, false);
         return new StudentViewHolder(view);
     }
 

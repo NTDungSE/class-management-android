@@ -17,7 +17,7 @@ import vn.edu.fpt.studentmanagementapp.R;
 import vn.edu.fpt.studentmanagementapp.model.Class;
 import vn.edu.fpt.studentmanagementapp.view.activities.ClassDetailActivity;
 
-public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.ClassViewHolder> {
+public class TeacherClassAdapter extends FirestoreRecyclerAdapter<Class, TeacherClassAdapter.ClassViewHolder> {
     private final ClassActionListener listener;
 
     public interface ClassActionListener {
@@ -27,7 +27,7 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
         void onCreateAssignment(String classId, Class classData);
     }
 
-    public ClassAdapter(@NonNull FirestoreRecyclerOptions<Class> options, ClassActionListener listener) {
+    public TeacherClassAdapter(@NonNull FirestoreRecyclerOptions<Class> options, ClassActionListener listener) {
         super(options);
         this.listener = listener;
         // Enable stable IDs to help RecyclerView manage view recycling
@@ -95,7 +95,7 @@ public class ClassAdapter extends FirestoreRecyclerAdapter<Class, ClassAdapter.C
     @NonNull
     @Override
     public ClassViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_class, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_teacher_class, parent, false);
         return new ClassViewHolder(view);
     }
 

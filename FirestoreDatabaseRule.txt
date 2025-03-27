@@ -47,7 +47,7 @@ service cloud.firestore {
                       get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "teacher" && 
                       resource.data.teacherId == request.auth.uid;
     }
-match /Assignments/{assignmentId} {
+		match /Assignments/{assignmentId} {
       // Allow teachers to create, read, update, and delete assignments for their classes
       allow create, update, delete: if request.auth != null && 
                                       get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "teacher" &&
@@ -57,11 +57,14 @@ match /Assignments/{assignmentId} {
       allow read: if request.auth != null && 
                    get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "teacher" &&
                    get(/databases/$(database)/documents/Classes/$(resource.data.classId)).data.teacherId == request.auth.uid;
+      allow read: if request.auth != null && 
+   	 							(resource.data.classId in get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.enrolledClasses ||
+    							resource.data.teacherId == request.auth.uid);
       
       // Allow students to read published assignments for classes they're enrolled in
       allow read: if request.auth != null && 
                    get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "student" &&
-                   resource.data.isPublished == true &&
+                   resource.data.published == true &&
                    get(/databases/$(database)/documents/Classes/$(resource.data.classId)).data.enrolledStudents[request.auth.uid] == "enrolled";
     }
     
@@ -70,6 +73,12 @@ match /Assignments/{assignmentId} {
       allow create, update: if request.auth != null && 
                              request.auth.uid == request.resource.data.studentId &&
                              get(/databases/$(database)/documents/Classes/$(request.resource.data.classId)).data.enrolledStudents[request.auth.uid] == "enrolled";
+      allow update: if request.auth != null &&
+                get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "student" &&
+                resource.data.published == true &&
+                get(/databases/$(database)/documents/Classes/$(resource.data.classId)).data.enrolledStudents[request.auth.uid] == "enrolled" &&
+                request.resource.data.diff(resource.data).affectedKeys().hasOnly(['submissionStatus']) &&
+                request.resource.data.submissionStatus[request.auth.uid] == "submitted";
       
       // Allow students to read their own submissions
       allow read: if request.auth != null && 
@@ -79,6 +88,7 @@ match /Assignments/{assignmentId} {
       allow read, update: if request.auth != null && 
                            get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == "teacher" &&
                            get(/databases/$(database)/documents/Classes/$(resource.data.classId)).data.teacherId == request.auth.uid;
+                   
     }
   }
 }

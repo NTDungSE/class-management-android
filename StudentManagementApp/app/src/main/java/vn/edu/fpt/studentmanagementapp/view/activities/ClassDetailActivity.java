@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,13 +27,13 @@ import vn.edu.fpt.studentmanagementapp.model.Class;
 import vn.edu.fpt.studentmanagementapp.model.Student;
 import vn.edu.fpt.studentmanagementapp.view.activities.teacher.assignments.AssignmentListActivity;
 import vn.edu.fpt.studentmanagementapp.view.activities.teacher.classes.ClassInviteActivity;
-import vn.edu.fpt.studentmanagementapp.view.adapters.ClassStudentAdapter;
+import vn.edu.fpt.studentmanagementapp.view.adapters.DetailClassStudentAdapter;
 
 public class ClassDetailActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private RecyclerView rvStudents;
     private TextView tvNoStudents, tvClassName, tvStudentCount, tvClassCode;
-    private ClassStudentAdapter adapter;
+    private DetailClassStudentAdapter adapter;
     private String classId;
     private boolean isTeacher;
     private static final String TAG = "ClassDetailActivity";
@@ -83,7 +82,7 @@ public class ClassDetailActivity extends AppCompatActivity {
 
         // Setup RecyclerView
         rvStudents.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ClassStudentAdapter();
+        adapter = new DetailClassStudentAdapter();
         rvStudents.setAdapter(adapter);
 
         // Setup FAB
@@ -102,6 +101,7 @@ public class ClassDetailActivity extends AppCompatActivity {
             btnAssignments.setOnClickListener(v -> {
                 Intent intent = new Intent(this, AssignmentListActivity.class);
                 intent.putExtra("CLASS_ID", classId);
+                intent.putExtra("IS_TEACHER", true);
                 startActivity(intent);
             });
         }
@@ -113,6 +113,15 @@ public class ClassDetailActivity extends AppCompatActivity {
         tvClassCode.setVisibility(View.VISIBLE);
         MaterialCardView card = findViewById(R.id.card_class_info);
         card.setCardElevation(8f);
+
+        ImageButton btnAssignments = findViewById(R.id.btn_assignments);
+        btnAssignments.setVisibility(View.VISIBLE);
+        btnAssignments.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AssignmentListActivity.class);
+            intent.putExtra("CLASS_ID", classId);
+            intent.putExtra("IS_TEACHER", false);
+            startActivity(intent);
+        });
     }
 
     private void loadClassDetails() {
@@ -159,7 +168,7 @@ public class ClassDetailActivity extends AppCompatActivity {
             return;
         }
 
-        List<ClassStudentAdapter.StudentWithStatus> studentsWithStatus = new ArrayList<>();
+        List<DetailClassStudentAdapter.StudentWithStatus> studentsWithStatus = new ArrayList<>();
         final int[] completedQueries = {0};
         final int totalQueries = enrolledStudents.size();
 
@@ -179,12 +188,12 @@ public class ClassDetailActivity extends AppCompatActivity {
                             if (!querySnapshot.isEmpty()) {
                                 Student student = querySnapshot.getDocuments().get(0).toObject(Student.class);
                                 if (student != null) {
-                                    studentsWithStatus.add(new ClassStudentAdapter.StudentWithStatus(student, status));
+                                    studentsWithStatus.add(new DetailClassStudentAdapter.StudentWithStatus(student, status));
                                 }
                             } else {
                                 // Create a placeholder student if not found
                                 Student placeholderStudent = new Student("Invited User", identifier);
-                                studentsWithStatus.add(new ClassStudentAdapter.StudentWithStatus(placeholderStudent, status));
+                                studentsWithStatus.add(new DetailClassStudentAdapter.StudentWithStatus(placeholderStudent, status));
                             }
 
                             checkIfComplete(completedQueries[0], totalQueries, studentsWithStatus);
@@ -204,7 +213,7 @@ public class ClassDetailActivity extends AppCompatActivity {
 
                             Student student = documentSnapshot.toObject(Student.class);
                             if (student != null) {
-                                studentsWithStatus.add(new ClassStudentAdapter.StudentWithStatus(student, status));
+                                studentsWithStatus.add(new DetailClassStudentAdapter.StudentWithStatus(student, status));
                             }
 
                             checkIfComplete(completedQueries[0], totalQueries, studentsWithStatus);
@@ -218,13 +227,13 @@ public class ClassDetailActivity extends AppCompatActivity {
         }
     }
 
-    private void checkIfComplete(int completed, int total, List<ClassStudentAdapter.StudentWithStatus> students) {
+    private void checkIfComplete(int completed, int total, List<DetailClassStudentAdapter.StudentWithStatus> students) {
         if (completed == total) {
             updateStudentsList(students);
         }
     }
 
-    private void updateStudentsList(List<ClassStudentAdapter.StudentWithStatus> students) {
+    private void updateStudentsList(List<DetailClassStudentAdapter.StudentWithStatus> students) {
         if (students.isEmpty()) {
             showNoStudentsView();
         } else {
@@ -276,6 +285,8 @@ public class ClassDetailActivity extends AppCompatActivity {
                         if (!querySnapshot.isEmpty()) {
                             String studentId = querySnapshot.getDocuments().get(0).getId();
                             updateStudentEnrollment(studentId);
+                        } else {
+                            Log.d(TAG, "Invited student not registered: " + identifier);
                         }
                     })
                     .addOnFailureListener(e ->

@@ -180,6 +180,7 @@ public class SubmissionListActivity extends AppCompatActivity implements Submiss
     private void loadSubmissions() {
         db.collection("Submissions")
                 .whereEqualTo("assignmentId", assignmentId)
+                .whereEqualTo("classId", classId)
                 .get()
                 .addOnSuccessListener(queryDocuments -> {
                     submissions.clear();

@@ -25,5 +25,12 @@
             android:textSize="14sp"
             android:textColor="@color/grey_500"/>
 
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="@color/green_500"
+            android:layout_marginTop="4dp"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

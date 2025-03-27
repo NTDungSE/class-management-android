@@ -36,6 +36,18 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginBottom="16dp">
 
+            <ImageButton
+                android:id="@+id/btn_view_assignments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="View Assignments"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/card_class_info"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginTop="16dp"
+                android:layout_marginHorizontal="16dp"
+                style="@style/Widget.Material3.Button.OutlinedButton"/>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

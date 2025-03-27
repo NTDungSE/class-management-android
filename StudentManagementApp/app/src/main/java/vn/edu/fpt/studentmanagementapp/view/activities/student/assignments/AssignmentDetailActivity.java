@@ -18,6 +18,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -272,6 +273,11 @@ public class AssignmentDetailActivity extends AppCompatActivity {
     }
     
     private void submitAssignment() {
+        if(assignment.getDueDate().before(new Date())) {
+            Toast.makeText(this, "Cannot submit - assignment is overdue",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
         String content = etSubmissionText.getText().toString().trim();
         
         if (content.isEmpty() && selectedFileUri == null) {
@@ -329,7 +335,7 @@ public class AssignmentDetailActivity extends AppCompatActivity {
                                               content, fileUrl, fileType);
         newSubmission.setLate(isLate);
         newSubmission.setSubmittedDate(now);
-        
+
         // Save to Firestore
         db.collection("Submissions").document(submissionId)
                 .set(newSubmission)
